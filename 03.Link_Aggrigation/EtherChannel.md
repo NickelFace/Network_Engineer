@@ -52,16 +52,33 @@ hos S3
 Зададим IP адресацию для устройств согласно условию:
 
 <details>
-<summary>S1,S2,S3</summary>
+<summary>S1</summary>
 <pre><code>
 int vla 99
-S1: ip addr 192.168.99.11 255.255.255.0
-S2: ip addr 192.168.99.12 255.255.255.0
-S3: ip addr 192.168.99.13 255.255.255.0
+ip addr 192.168.99.11 255.255.255.0
 no shut
 exit 
 </code></pre>
 </details>
+<details>
+<summary>S2</summary>
+<pre><code>
+int vla 99
+ip addr 192.168.99.12 255.255.255.0
+no shut
+exit 
+</code></pre>
+</details>
+<details>
+<summary>S3</summary>
+<pre><code>
+int vla 99
+ip addr 192.168.99.13 255.255.255.0
+no shut
+exit 
+</code></pre>
+</details>
+
 Отключим поиск DNS , зашифруем пароли ,а также назначим баннерное сообщение:
 
 <details>
@@ -109,7 +126,7 @@ vlan 10
 name Staff 
 </code></pre>
 </details>
-Настроим порты коммутатора с присоединёнными узлами в качестве портов доступа в сети VLAN 10:
+Настроим порты коммутатора с присоединёнными узлами в качестве портов доступа к сети VLAN 10:
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -119,10 +136,15 @@ sw ac vl 10
 </code></pre>
 </details>
 Сохраним конфигурацию:
-```
+
+<details>
+<summary>S1,S2,S3</summary>
+<pre><code>
 do copy run start
-[Enter] 
-```
+</code></pre>
+</details>
+
+
 Пропишем на ПК:
 
 <details>
@@ -148,21 +170,31 @@ save
 </details>
 ### Настройка протокола PAgP
 
-Настроим для S1 и S3 PAgP :
+Настроим для S1 и S2 PAgP :
 
 <details>
 <summary>S1</summary>
 <pre><code>
-int ran e1/2-3
+int ran e0/1-2
 channel-group 1 mode desirable
 no shut 
 </code></pre>
 </details>
 <details>
-<summary>S3</summary>
+<summary>S2</summary>
 <pre><code>
-int ran e1/2-3
+int ran e0/1-2
 channel-group 1 mode auto
 no shut 
+</code></pre>
+</details>
+
+Проверка конфигурации на портах для S1
+
+<details>
+<summary>S1</summary>
+<pre><code>
+do show run interface e0/1
+do show interfaces f0/3 switchport
 </code></pre>
 </details>
