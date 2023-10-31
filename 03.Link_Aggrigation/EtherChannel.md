@@ -97,8 +97,10 @@ int ran e0/1-3
 shut
 int ran e1/0-3
 shut 
+exit
 </code></pre>
 </details>
+
 создадим VLAN 99 , 10 именем **Management** и **Staff** соответственно
 <details>
 <summary>S1,S2,S3</summary>
@@ -107,8 +109,13 @@ vlan 99
 name Management
 vlan 10
 name Staff 
+exit
 </code></pre>
 </details>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 Настроим порты коммутатора с присоединёнными узлами в качестве портов доступа в сети VLAN 10:
 <details>
 <summary>S1,S2,S3</summary>
@@ -116,8 +123,10 @@ name Staff
 int e0/0
 sw m ac
 sw ac vl 10
+exit
 </code></pre>
 </details>
+
 Сохраним конфигурацию:
 ```
 do copy run start
@@ -129,23 +138,27 @@ do copy run start
 <summary>A</summary>
 <pre><code>
 ip 192.168.10.1/24
-save 
+save
+
 </code></pre>
 </details>
 <details>
 <summary>B</summary>
 <pre><code>
- ip 192.168.10.2/24
-save 
+ip 192.168.10.2/24
+save
+
 </code></pre>
 </details>
 <details>
 <summary>C</summary>
 <pre><code>
 ip 192.168.10.3/24
-save 
+save
+
 </code></pre>
 </details>
+
 ### Настройка протокола PAgP
 
 Настроим для S1 и S3 PAgP :
