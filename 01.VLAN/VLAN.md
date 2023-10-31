@@ -77,7 +77,7 @@ do copy run start
    ```
    no ip domain-lookup
    ```
-3. In the configuration mode, we will write : the password for the privileged mode, and for the device input, as well as CLI synchronize unsolicited messages, log messages, and debug output with the solicited user input and prompts. 
+3. In the configuration mode, we will write : the password for the privileged mode, and for the device input and let logging synchronous for the console line. 
  <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -141,9 +141,11 @@ switchport trunk encapsulation dot1q
 switchport mode trunk
 </code></pre>
 </details>
+
 ```
 show interfaces trunk  
 ```
+
 <details>
 <summary>S3</summary>
 <pre><code>

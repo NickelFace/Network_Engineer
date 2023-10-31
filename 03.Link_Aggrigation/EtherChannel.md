@@ -219,6 +219,7 @@ interface Ethernet0/1
 end
 </code></pre>
 </details>
+
 ```
 do show interfaces e0/1 switchport
 ```

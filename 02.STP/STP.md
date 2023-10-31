@@ -1,27 +1,27 @@
-## Лабораторная работа. Развертывание коммутируемой сети с резервными каналами
+## Laboratory work. Deployment of a switched network with redundant channels
 
-### Топология
+### Topology
 
 ![Scheme](img/Scheme.png)
 
-### Таблица адресации
+### Addressing table
 
-| Устройство | Интерфейс | IP-адрес    | Маска подсети |
-| ---------- | --------- | ----------- | ------------- |
-| S1         | VLAN 1    | 192.168.1.1 | 255.255.255.0 |
-| S2         | VLAN 1    | 192.168.1.2 | 255.255.255.0 |
-| S3         | VLAN 1    | 192.168.1.3 | 255.255.255.0 |
+| Device | Interface | IP address  | Subnet Mask   |
+| ------ | --------- | ----------- | ------------- |
+| S1     | VLAN 1    | 192.168.1.1 | 255.255.255.0 |
+| S2     | VLAN 1    | 192.168.1.2 | 255.255.255.0 |
+| S3     | VLAN 1    | 192.168.1.3 | 255.255.255.0 |
 
-### Цели:
+### Goals:
 
-**Часть 1.** Создание сети и настройка основных параметров устройства
-**Часть 2.** Выбор корневого моста
-**Часть 3.** Наблюдение за процессом выбора протоколом STP порта, исходя из стоимости портов
-**Часть 4.** Наблюдение за процессом выбора протоколом STP порта, исходя из приоритета портов
+**Part1.** Creating a network and configuring basic device parameters.
+**Part 2.** Choosing a Root bridge.
+**Part 3.** Monitoring the process of choosing a port by the STP protocol, based on the cost of ports.
+**Part 4.** Monitoring the process of selecting a port by the STP protocol, based on the priority of ports.
 
-### Создание сети и настройка основных параметров устройства
+### Creating a network and configuring basic device parameters.
 
-Построим сеть согласно топологии , пропишем имена устройств ,а также назначим IP на VLAN 1 интерфейсе.
+We will build a network according to the topology, write the device names, and also assign IP to VLAN 1 of the interface.
 
 <details>
 <summary>S1</summary>
@@ -65,7 +65,7 @@ ip add 192.168.1.3 255.255.255.0
 no shut 
 </code></pre>
 </details>
-Отключим DNS поиск и также назначим пароли на привилегированному режиму,а также на VTY консоли, logging synchronous для консольной линии.
+We will disable DNS search and also assign passwords to the privileged mode, as well as to the VTY console, logging synchronous for the console line.
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -79,7 +79,7 @@ banner motd “**This is a secure system. Authorized Access Only!**"'b'
 </code></pre>
 </details>
 
-Проверим связь между свичами
+Let's check the connection between the switches
 
 <details>
 <summary>S1</summary>
@@ -102,9 +102,9 @@ Success rate is 80 percent (4/5), round-trip min/avg/max = 1/3/5 ms
 </code></pre>
 </details>
 
-### Определение корневого моста
+### Root Bridge Definition.
 
-Настраиваем порты в режим **trunk**
+Configuring ports in **trunk mode**
 
 <details>
 <summary>S1,S2,S3</summary>
@@ -117,7 +117,7 @@ exit
 </code></pre>
 </details>
 
-Отключаем лишние порты, пусть это будет e0/1 и e0/3
+Disable the extra ports, let it be e0/1 and e0/3
 
 <details>
 <summary>S1,S2,S3</summary>
@@ -130,7 +130,7 @@ exit
 </code></pre>
 </details>
 
-Отображаем данные по STP
+Displaying STP data.
 
 <details>
 <summary>S1</summary>
@@ -204,17 +204,17 @@ Et0/2               Root FWD 100       128.3    P2p
 </code></pre>
 </details>
 
-Теперь нагляднее :
+Now it's clearer :
 
 ![status](img/stp_status.png)
 
-звездочка красная это порт выключен ( disabled )
+the red asterisk indicates that the port is disabled
 
-Root выбирается на основе MAC адреса и BID Priority(по  умолчанию 32769), наименьший адрес устройства MAC побеждает в выборах.   Порт e0/0 на S3 был заблокирован STP и данные по нему не будут ходить.
+Root is selected based on the MAC address and BID Priority (default 32769), the smallest MAC device address wins the election.   Port e0/0 on S3 has been blocked by STP and data will not go through it.
 
-### Наблюдение за процессом выбора протоколом STP порта, исходя из стоимости портов
+### Monitoring the process of choosing a port by the STP protocol, based on the cost of ports.
 
-Так как информацию по STP и его портам мы имеем ,то сейчас мы будем наблюдать, как будет меняться топология исходя из стоимости портов. По  умолчанию стоимость Ethernet = 100 ,посмотрим как измениться  топология,когда мы на S3  изменим стоимость порта в сторону root.
+Since we have information on STP and its ports, now we will observe how the topology will change based on the cost of ports. By default, the cost of Ethernet = 100, let's see how the topology will change when we change the cost of the port to root on S3.
 <details>
 <summary>S3</summary>
 <pre><code>
@@ -223,7 +223,7 @@ spanning-tree cost 90
 exit
 </code></pre>
 </details>
-Выведем состояние STP в порядке S1,S2,S3.
+Output the STP state in the order S1,S2,S3.
 
 <details>
 <summary>S1</summary>
@@ -299,7 +299,7 @@ Et0/2               Root FWD 90        128.3    P2p
 
 ![change_cost](img/44res_cost.png)
 
-Как видим порты поменялись местами . Теперь вернем как и было.
+As you can see , the ports have changed places . Now we will return it as it was.
 
 <details>
 <summary>S3</summary>
@@ -310,9 +310,9 @@ exit
 </code></pre>
 </details>
 
-### Наблюдение за процессом выбора протоколом STP порта, исходя из приоритета портов
+### Monitoring the process of selecting a port by the STP protocol, based on the priority of ports.
 
-Включаем отключенные ранее порты на коммутаторах
+Enabling previously disabled ports on switches
 
 <details>
 <summary>S1,S2,S3</summary>
@@ -325,7 +325,7 @@ exit
 </code></pre>
 </details>
 
-Проверим состояние STP сейчас
+Let's check the STP status now
 
  <details>
 <summary>S1</summary>
@@ -406,16 +406,16 @@ Et0/3               Altn BLK 100       128.4    P2p
 </details>
 ![](img/port_status_after.png)
 
-Коммутатор S1 корневой,а это значит,что все его порты desg . Также  видим, что каждый коммутатор в сторону корневого выбрал по 1  порту в качестве root на основе номера порта и его стоимости.  А также  выделил альтернативный и заблокированный порт. Что касается направления S2 и S3 ,то там выбор desg и altn , чтобы не  создавать петли.
+The S1 switch is root, which means that all its ports are desg. We also see that each switch in the direction of the root has chosen 1 port as root based on the port number and its cost.  And also highlighted an alternative and blocked port. As for the direction of S2 and S3, there is a choice of designed and alternated, so as not to create loops.
 
-1. Какое значение протокол STP использует первым после выбора корневого моста, чтобы определить выбор порта?
+1. What value does the STP protocol use first after selecting the root bridge to determine the port selection?
 
-   Поиск портов в сторону коммутатора root, то есть  кротчайшие пути,которые зависят от скорости соединения и количества  промежуточных коммутаторов.
+   Search for ports in the direction of the root switch, that is, the shortest paths that depend on the connection speed and the number of intermediate switches.
 
-2. Если первое значение на двух портах одинаково, какое следующее значение будет использовать протокол STP при выборе порта?
+2. If the first value on the two ports is the same, what is the next value that the STP protocol will use when selecting a port?
 
-   Если стоимости портов равны, процесс сравнивает BID. Если  BID равны, для определения корневого моста используются приоритеты  портов. Значение приоритета по умолчанию — 128,отключается порт с  большим значением.
+   If the port values are equal, the process compares the BID. If the bids are equal, port priorities are used to determine the root bridge. The default priority value is 128, the port with a large value is disabled.
 
-3. Если оба значения на двух портах равны, каким будет следующее значение, которое использует протокол STP при выборе порта?
+3. If both values on two ports are equal, what will be the next value that the STP protocol uses when selecting a port?
 
-   в этом случае STP использует номер наименьшего порта .
+   In this case , STP uses the smallest port number .
