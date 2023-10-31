@@ -1,889 +1,625 @@
-## Лабораторная работа. Настройка EtherChannel 
+## Laboratory work. Troubleshooting EtherChannel
 
-### Топология
+### Topology
 
-![](img/Etherchannel.png)
 
-### Таблица адресации
 
-| Устройство | Интерфейс | IP-адрес      | Маска подсети |
-| ---------- | --------- | ------------- | ------------- |
-| S1         | VLAN 99   | 192.168.99.11 | 255.255.255.0 |
-| S2         | VLAN 99   | 192.168.99.12 | 255.255.255.0 |
-| S3         | VLAN 99   | 192.168.99.13 | 255.255.255.0 |
-| PC-A       | NIC       | 192.168.10.1  | 255.255.255.0 |
-| PC-B       | NIC       | 192.168.10.2  | 255.255.255.0 |
-| PC-C       | NIC       | 192.168.10.3  | 255.255.255.0 |
+![Troubleshooting](img/Scheme_Troubleshooting.png)
 
-### Цели
+### Addressing table
 
-**Часть 1. Настройка базовых параметров коммутатора**
-**Часть 2. Настройка PAgP**
-**Часть 3. Настройка LACP**
+| Device | Interface |  IP-address  |     Mask      |
+| :----: | :-------: | :----------: | :-----------: |
+|   S1   |  VLAN 99  | 192.168.1.11 | 255.255.255.0 |
+|   S2   |  VLAN 99  | 192.168.1.12 | 255.255.255.0 |
+|   S3   |  VLAN 99  | 192.168.1.13 | 255.255.255.0 |
+|  PC-A  |    NIC    | 192.168.0.2  | 255.255.255.0 |
+|  PC-C  |    NIC    | 192.168.0.3  | 255.255.255.0 |
 
-### Настройка базовых параметров коммутатора
+### VLAN assignments
 
-Для начало настроим имя устройства:
+| VLAN |    Name    |
+| :--: | :--------: |
+|  10  |   Users    |
+|  99  | Management |
 
-<details>
-<summary>S1</summary>
-<pre><code>
-enable
-conf t
-hos S1
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-enable
-conf t
-hos S2
-</code></pre>
-</details>
-<details>
-<summary>S3</summary>
-<pre><code>
-enable
-conf t
-hos S3
-</code></pre>
-</details>
-Зададим IP адресацию для устройств согласно условию:
+
+
+### Tasks
+
+- Building a network and device settings
+- Troubleshooting EtherChannel
+
+### Building a network and device settings
+
+Starting configuration before troubleshooting:
 
 <details>
 <summary>S1</summary>
 <pre><code>
-int vla 99
-ip addr 192.168.99.11 255.255.255.0
-no shut
-exit 
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-int vla 99
-ip addr 192.168.99.12 255.255.255.0
-no shut
-exit 
-</code></pre>
-</details>
-<details>
-<summary>S3</summary>
-<pre><code>
-int vla 99
-ip addr 192.168.99.13 255.255.255.0
-no shut
-exit 
-</code></pre>
-</details>
-
-Отключим поиск DNS , зашифруем пароли ,а также назначим баннерное сообщение:
-
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
-no ip domain-loo
-service password-encryption
-Banner motd "This is a secure system. Authorized Access Only!" 
-</code></pre>
-</details>
-Зададим пароль на привилегированный режим , консольный режим и на VTY ,а также сервис по синхронной регистрации.
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
+enable
+conf t
+hostname S1
+interface range f0/1-24, g0/1-2
+shutdown
+exit
 enable secret class
-line vty 0 4
-logging synchronous
+no ip domain lookup
+line vty 0 15
 password cisco
 login
-exit
 line con 0
-exec-timeout 0 0
-logging synchronous
-password cisco
-login
-exit 
-</code></pre>
-</details>
-
-Отключим все порты на устройстве, кроме тех,что смотрят в сторону ПК
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
-int ran e0/1-3
-shut
-int ran e1/0-3
-shut 
-</code></pre>
-</details>
-создадим VLAN 99 , 10 именем **Management** и **Staff** соответственно
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
-vlan 99
-name Management
+ exec-t 0 0
+ password cisco
+ logging synchronous
+ login
+ exit
 vlan 10
-name Staff 
-</code></pre>
-</details>
-Настроим порты коммутатора с присоединёнными узлами в качестве портов доступа к сети VLAN 10:
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
-int e0/0
-sw m ac
-sw ac vl 10
-</code></pre>
-</details>
-Сохраним конфигурацию:
-
-<details>
-<summary>S1,S2,S3</summary>
-<pre><code>
-do copy run start
-[Enter]
-</code></pre>
-</details>
-
-Пропишем на ПК:
-
-<details>
-<summary>A</summary>
-<pre><code>
-ip 192.168.10.1/24
-save 
-</code></pre>
-</details>
-<details>
-<summary>B</summary>
-<pre><code>
- ip 192.168.10.2/24
-save 
-</code></pre>
-</details>
-<details>
-<summary>C</summary>
-<pre><code>
-ip 192.168.10.3/24
-save 
-</code></pre>
-</details>
-
-### Настройка протокола PAgP
-
-Настроим для S1 и S2 PAgP :
-
-<details>
-<summary>S1</summary>
-<pre><code>
-int ran e0/1-2
-channel-group 1 mode desirable
-no shut
-exit
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-int ran e0/1-2
-channel-group 1 mode auto
-no shut 
-exit
-</code></pre>
-</details>
-
-Проверка конфигурации на портах для S1 и S2
-
-```
-do show run interface e0/1
-```
-<details>
-<summary>S1</summary>
-<pre><code>
-do show run interface e0/1
-!
-interface Ethernet0/1
- channel-group 1 mode desirable
-end
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-do show run interface e0/1
-!
-interface Ethernet0/1
- channel-group 1 mode auto
-end
-</code></pre>
-</details>
-```
-do show interfaces e0/1 switchport
-```
-
-<details>
-<summary>S1</summary>
-<pre><code>
-do show interfaces e0/1 switchport
-!
-Name: Et0/1
-Switchport: Enabled
-Administrative Mode: dynamic auto
-Operational Mode: static access (member of bundle Po1)
-Administrative Trunking Encapsulation: negotiate
-Operational Trunking Encapsulation: native
-Negotiation of Trunking: On
-Access Mode VLAN: 1 (default)
-Trunking Native Mode VLAN: 1 (default)
-Administrative Native VLAN tagging: enabled
-Voice VLAN: none
-Administrative private-vlan host-association: none
-Administrative private-vlan mapping: none
-Administrative private-vlan trunk native VLAN: none
-Administrative private-vlan trunk Native VLAN tagging: enabled
-Administrative private-vlan trunk encapsulation: dot1q
-Administrative private-vlan trunk normal VLANs: none
-Administrative private-vlan trunk associations: none
-Administrative private-vlan trunk mappings: none
-Operational private-vlan: none
-Trunking VLANs Enabled: ALL
-Pruning VLANs Enabled: 2-1001
-Capture Mode Disabled
-Capture VLANs Allowed: ALL
-!
-Protected: false
-Appliance trust: none
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-do show interfaces e0/1 switchport
-!
-Name: Et0/1
-Switchport: Enabled
-Administrative Mode: dynamic auto
-Operational Mode: static access (member of bundle Po1)
-Administrative Trunking Encapsulation: negotiate
-Operational Trunking Encapsulation: native
-Negotiation of Trunking: On
-Access Mode VLAN: 1 (default)
-Trunking Native Mode VLAN: 1 (default)
-Administrative Native VLAN tagging: enabled
-Voice VLAN: none
-Administrative private-vlan host-association: none
-Administrative private-vlan mapping: none
-Administrative private-vlan trunk native VLAN: none
-Administrative private-vlan trunk Native VLAN tagging: enabled
-Administrative private-vlan trunk encapsulation: dot1q
-Administrative private-vlan trunk normal VLANs: none
-Administrative private-vlan trunk associations: none
-Administrative private-vlan trunk mappings: none
-Operational private-vlan: none
-Trunking VLANs Enabled: ALL
-Pruning VLANs Enabled: 2-1001
-Capture Mode Disabled
-Capture VLANs Allowed: ALL
-!
-Protected: false
-Appliance trust: none
-</code></pre>
-</details>
-
-Убеждаемся, что порты объединены
-
-```
-do show etherchannel summary
-```
-
-<details>
-<summary>S1</summary>
-<pre><code>
-do show etherchannel summary
-!
-Flags:  
-D - down	P - bundled in port-channel
-I - stand-alone	s - suspended
-H - Hot-standby (LACP only)
-R - Layer3      S - Layer2
-U - in use      N - not in use, no aggregation
-f - failed to allocate aggregator
-M - not in use, minimum links not met
-m - not in use, port not aggregated due to minimum links not met
-u - unsuitable for bundling
-w - waiting to be aggregated
-d - default port    
-A - formed by Auto LAG
-!
-!
-Number of channel-groups in use: 1
-Number of aggregators:           1
-!
-Group  Port-channel  Protocol    Ports
-------+-------------+-----------+-----------------------------------------------
-1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-do show etherchannel summary
-!
-Flags:  
-D - down	P - bundled in port-channel
-I - stand-alone	s - suspended
-H - Hot-standby (LACP only)
-R - Layer3      S - Layer2
-U - in use      N - not in use, no aggregation
-f - failed to allocate aggregator
-M - not in use, minimum links not met
-m - not in use, port not aggregated due to minimum links not met
-u - unsuitable for bundling
-w - waiting to be aggregated
-d - default port    
-A - formed by Auto LAG
-!
-!
-Number of channel-groups in use: 1
-Number of aggregators:           1
-!
-Group  Port-channel  Protocol    Ports
-------+-------------+-----------+-----------------------------------------------
-1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
-</code></pre>
-</details>
-
-Настройте транковые порты.
-
-<details>
-<summary>S1,S2</summary>
-<pre><code>
+ name User
+vlan 99
+ Name Management
+interface range f0/1-2
+ switchport mode trunk
+ channel-group 1 mode active
+ switchport trunk native vlan 99
+ no shutdown
+interface range f0/3-4
+ channel-group 2 mode desirable
+ switchport trunk native vlan 99
+ no shutdown
+interface f0/6
+ switchport mode access
+ switchport access vlan 10
+ no shutdown
+interface vlan 99
+ ip address 192.168.1.11 255.255.255.0
 interface port-channel 1
-switchport trunk encapsulation dot1q
-switchport mode trunk
-switchport trunk native vlan 99
-</code></pre>
-</details>
-
-Убедитесь в том, что порты настроены в качестве транковых.
-
-```
-do show run interface e0/1
-```
-
-<details>
-<summary>S1,S2</summary>
-<pre><code>
-do show run interface e0/1
-!
-interface Ethernet0/1
- switchport trunk encapsulation dot1q
  switchport trunk native vlan 99
  switchport mode trunk
+interface port-channel 2
+ switchport trunk native vlan 99
+ switchport mode access
+do wr
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+enable
+conf t
+hostname S2
+interface range f0/1-24, g0/1-2
+ shutdown
+ exit
+enable secret class
+no ip domain lookup
+line vty 0 15
+ password cisco
+ login
+line con 0
+ exec-t 0 0
+ password cisco
+ logging synchronous
+ login
+ exit
+vlan 10
+ name User
+vlan 99
+ name Management
+spanning-tree vlan 1,10,99 root primary
+interface range f0/1-2
+ switchport mode trunk
  channel-group 1 mode desirable
+ switchport trunk native vlan 99
+ no shutdown
+interface range f0/3-4
+ switchport mode trunk
+ channel-group 3 mode desirable
+ switchport trunk native vlan 99
+interface vlan 99
+ ip address 192.168.1.12 255.255.255.0
+interface port-channel 1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,99
+interface port-channel 3
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
+do wr
+</code></pre>
+</details>
+<details>
+<summary>S3</summary>
+<pre><code>
+enab
+conf t
+hostname S3
+interface range f0/1-24, g0/1-2
+ shutdown
+ exit
+enable secret class
+no ip domain lookup
+line vty 0 15
+ password cisco
+ login
+line con 0
+ exec-t 0 0
+ password cisco
+ logging synchronous
+ login
+ exit
+vlan 10
+ name User
+vlan 99
+ name Management
+interface range f0/1-2
+interface range f0/3-4
+ switchport mode trunk
+ channel-group 3 mode desirable
+ switchport trunk native vlan 99
+ no shutdown
+interface f0/18
+ switchport mode access
+ switchport access vlan 10
+ no shutdown
+interface vlan 99
+ ip address 192.168.1.13 255.255.255.0
+interface port-channel 3
+ switchport trunk native vlan 99
+ switchport mode trunk
+do wr
+</code></pre>
+</details>
+
+### Troubleshooting EtherChannel
+
+Stages of Diagnostic 
+
+- Check Etherchannel summary
+- Check VLANs: status, ports, configuration, mismatching;
+- Make sure that Access VLAN 10 set up right
+- Check STP
+
+```
+do sh etherchannel summary
+```
+
+<details>
+<summary>S1</summary>
+<pre><code>
+S1(config)#do sh etherchannel summary
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+!
+!
+Number of channel-groups in use: 2
+Number of aggregators:           2
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+!
+1      Po1(SD)           LACP   Fa0/1(I) Fa0/2(I) 
+2      Po2(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+S2(config-if)#do sh etherchannel summary
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+!
+!
+Number of channel-groups in use: 2
+Number of aggregators:           2
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+!
+1      Po1(SD)           PAgP   Fa0/1(I) Fa0/2(I) 
+3      Po3(SD)           PAgP   Fa0/3(D) Fa0/4(D) 
+</code></pre>
+</details>
+<details>
+<summary>S3</summary>
+<pre><code>
+S3(config-if)#do sh etherchannel summary
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+!
+!
+Number of channel-groups in use: 1
+Number of aggregators:           1
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+!
+3      Po3(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+</code></pre>
+</details>
+Conclusion 1:
+
+For Switch 3 the Etherchannel 2 is missing; <u>let's fix it!</u>
+
+```
+S3(config)#int r fa0/3-4
+S3(config-if-range)#channel-group 2 mode auto
+```
+
+Check VLANs: Access 10 and Trunk 99.
+
+```
+S1(config)#do show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Po1, Po2, Fa0/3, Fa0/4
+                                                Fa0/5, Fa0/7, Fa0/8, Fa0/9
+                                                Fa0/10, Fa0/11, Fa0/12, Fa0/13
+                                                Fa0/14, Fa0/15, Fa0/16, Fa0/17
+                                                Fa0/18, Fa0/19, Fa0/20, Fa0/21
+                                                Fa0/22, Fa0/23, Fa0/24, Gig0/1
+                                                Gig0/2
+10   User                             active    Fa0/6
+99   Management                       active    
+1002 fddi-default                     active    
+1003 token-ring-default               active    
+1004 fddinet-default                  active    
+1005 trnet-default                    active    
+```
+
+```
+S3(config-if-range)#do show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Po3, Fa0/1, Fa0/2, Fa0/5
+                                                Fa0/6, Fa0/7, Fa0/8, Fa0/9
+                                                Fa0/10, Fa0/11, Fa0/12, Fa0/13
+                                                Fa0/14, Fa0/15, Fa0/16, Fa0/17
+                                                Fa0/19, Fa0/20, Fa0/21, Fa0/22
+                                                Fa0/23, Fa0/24, Gig0/1, Gig0/2
+10   User                             active    Fa0/18
+99   Management                       active    
+1002 fddi-default                     active    
+1003 token-ring-default               active    
+1004 fddinet-default                  active    
+1005 trnet-default                    active    
+```
+
+Ok - moving forward
+
+Status Po2 on SW1 and SW3
+
+```
+show running-config | section Port-channel2
+```
+
+```
+S1#show running-config | section Port-channel2
+interface Port-channel2
+ switchport trunk native vlan 99
+ switchport mode access
+```
+
+```
+S3(config)#do show running-config | section Port-channel2
+interface Port-channel2
+ switchport trunk native vlan 99
+ switchport mode trunk
+```
+
+Aggregation channel doesn't work with **access mode**; Change it!
+
+```
+S1(config)#interface Port-channel2
+S1(config-if)#switchport mode trunk
+S1(config-if)#exit
+```
+
+Showing other Po1 and Po3
+
+```
+S1#show running-config
+!
+interface FastEthernet0/1
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface FastEthernet0/2
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode active
+```
+
+```
+S2#show running-config 
+!
+interface FastEthernet0/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,99
+ switchport mode trunk
+ channel-group 1 mode desirable
+!
+interface FastEthernet0/2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,99
+ switchport mode trunk
+ channel-group 1 mode desirable
+```
+
+From side S2 all traffic from VLAN 10 **don't allow**, only VLAN 1,99
+
+```
+S2:
+int r fa0/1-2
+switchport trunk allowed vlan add 10
+exit
+```
+
+Fix it, go forward.
+
+I suggest looking at the config of each port
+
+```
+S1#show running-config 
+!
+interface FastEthernet0/1
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode active
+ !
+interface FastEthernet0/2
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface FastEthernet0/3
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode desirable
+!
+S1#show running-config | section 0/4
+interface FastEthernet0/4
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode desirable
+```
+
+```
+S2#show running-config 
+!
+interface FastEthernet0/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
+ channel-group 1 mode desirable
+!
+interface FastEthernet0/2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
+ channel-group 1 mode desirable
+!
+interface FastEthernet0/3
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
+ channel-group 3 mode desirable
+ shutdown
+!
+interface FastEthernet0/4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
+ channel-group 3 mode desirable
+ shutdown
+```
+
+```
+S3#show running-config
+!
+interface FastEthernet0/1
+ shutdown
+!
+interface FastEthernet0/2
+ shutdown
+!
+interface FastEthernet0/3
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode auto
+S3#show running-config | section 0/4
+interface FastEthernet0/4
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode auto
+```
+
+So, I notice that ports are shutdown 
+
+```
+S2(config)#int r FastEthernet0/3-4
+S2(config-if-range)#no shut
+!
+%LINK-5-CHANGED: Interface FastEthernet0/3, changed state to down
+!
+%LINK-5-CHANGED: Interface FastEthernet0/4, changed state to down
+S2(config-if-range)#exit
+```
+
+```
+S3(config)#int r fa0/1-2
+ no shut
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 3 mode auto
+```
+
+Great, everything OK!
+
+Diagnostic
+
+```
+S1#show etherchannel summary 
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+!
+!
+Number of channel-groups in use: 2
+Number of aggregators:           2
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+!
+1      Po1(SD)           LACP   Fa0/1(I) Fa0/2(I) 
+2      Po2(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+!
+!
+!
+S2#show etherchannel summary 
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+!
+!
+Number of channel-groups in use: 2
+Number of aggregators:           2
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+!
+1      Po1(SD)           PAgP   Fa0/1(I) Fa0/2(I) 
+3      Po3(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+```
+
+Again, mismatching protocols
+
+I am choosing LACP for interface Po1 to SW2
+
+```
+S2(config)#no int po1
+int r fa0/1-2
+ no shut
+ channel-group 1 mode passive
+ exit
+Int po 1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,10,99
+ switchport mode trunk
 end
-</code></pre>
-</details>
-
-```
-do show interfaces trunk
 ```
 
-<details>
-<summary>S1,S2</summary>
-<pre><code>
-do show interfaces trunk
-!
-Port        Mode             Encapsulation  Status        Native vlan
-Po1         on               802.1q         trunking      99
-!
-Port        Vlans allowed on trunk
-Po1         1-4094
-!
-Port        Vlans allowed and active in management domain
-Po1         1,10,99
-!
-Port        Vlans in spanning tree forwarding state and not pruned
-Po1         1,10,99
-</code></pre>
-</details>
+Checking again:
 
 ```
-do show spanning-tree 
-```
-<details>
-<summary>S1</summary>
-<pre><code>
-do show spanning-tree
-!
-VLAN0001
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32769
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Desg FWD 56        128.65   P2p
-!
-!
-!
-VLAN0010
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32778
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Et0/0               Desg FWD 100       128.1    P2p
-Po1                 Desg FWD 56        128.65   P2p
-!
-!
-!
-VLAN0099
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32867
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Desg FWD 56        128.65   P2p
-</code></pre>
-</details>
+S1#show etherchannel summary 
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
 
-<details>
-<summary>S2</summary>
-<pre><code>
-do show spanning-tree
-!
-VLAN0001
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32769
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Root FWD 56        128.65   P2p
-!
-!
-VLAN0010
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32778
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Et0/0               Desg FWD 100       128.1    P2p
-Po1                 Root FWD 56        128.65   P2p
-!
-!
-VLAN0099
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32867
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Root FWD 56        128.65   P2p
-</code></pre>
-</details>
 
-### Настройка протокола LACP
+Number of channel-groups in use: 2
+Number of aggregators:           2
 
-<details>
-<summary>S1</summary>
-<pre><code>
-!
-interface range e1/2-3
-switchport trunk encapsulation dot1q
-switchport mode trunk
-switchport trunk native vlan 99
-channel-group 2 mode active
-no shutdown
-exit
-!
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-interface range e1/0-1
-switchport trunk encapsulation dot1q
-switchport mode trunk
-switchport trunk native vlan 99
-channel-group 3 mode passive
-no shutdown
-exit
-</code></pre>
-</details>
-<details>
-<summary>S3</summary>
-<pre><code>
-interface range e1/2-3
-switchport trunk encapsulation dot1q
-switchport mode trunk
-switchport trunk native vlan 99
-channel-group 2 mode passive
-no shutdown
-exit
-!
-interface range e1/0-1
-switchport trunk encapsulation dot1q
-switchport mode trunk
-switchport trunk native vlan 99
-channel-group 3 mode active
-no shutdown
-exit
-</code></pre>
-</details>
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
 
-Диагностика
+1      Po1(SU)           LACP   Fa0/1(P) Fa0/2(P) 
+2      Po2(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+!
+S2#show etherchannel summary 
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
 
-```
-show etherchannel summary
+
+Number of channel-groups in use: 2
+Number of aggregators:           2
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+
+1      Po1(SU)           LACP   Fa0/1(P) Fa0/2(P) 
+3      Po3(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+!
+S3#show etherchannel summary 
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+
+
+Number of channel-groups in use: 2
+Number of aggregators:           2
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+
+2      Po2(SU)           PAgP   Fa0/3(P) Fa0/4(P) 
+3      Po3(SU)           PAgP   Fa0/1(P) Fa0/2(P) 
 ```
 
-<details>
-<summary>S1</summary>
-<pre><code>
-show etherchannel summary
-...
-!
-------+-------------+-----------+-----------------------------------------------
-1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
-2      Po2(SU)         LACP      Et1/2(P)    Et1/3(P)
-!
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-show etherchannel summary
-...
-!
-------+-------------+-----------+-----------------------------------------------
-1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
-3      Po3(SU)         LACP      Et1/0(P)    Et1/1(P)
-!
-</code></pre>
-</details>
-<details>
-<summary>S3</summary>
-<pre><code>
-show etherchannel summary
-...
-!
-------+-------------+-----------+-----------------------------------------------
-2      Po2(SU)         LACP      Et1/2(P)    Et1/3(P)
-3      Po3(SU)         LACP      Et1/0(P)    Et1/1(P)
-!
-</code></pre>
-</details>
-
-Проверка трафика и работы протокола STP
+Checking ping:
 
 ```
-show spanning-tree
+ping 192.168.0.3
+
+Pinging 192.168.0.3 with 32 bytes of data:
+
+Request timed out.
+Reply from 192.168.0.3: bytes=32 time=10ms TTL=128
+Reply from 192.168.0.3: bytes=32 time=1ms TTL=128
+Reply from 192.168.0.3: bytes=32 time=1ms TTL=128
+
+Ping statistics for 192.168.0.3:
+    Packets: Sent = 4, Received = 3, Lost = 1 (25% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 1ms, Maximum = 10ms, Average = 4ms
 ```
 
-<details>
-<summary>S1</summary>
-<pre><code>
-show spanning-tree
-!
-VLAN0001
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32769
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Desg FWD 56        128.65   P2p
-Po2                 Desg FWD 56        128.66   P2p
-!
-!
-!
-VLAN0010
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32778
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Et0/0               Desg FWD 100       128.1    P2p
-Po1                 Desg FWD 56        128.65   P2p
-Po2                 Desg FWD 56        128.66   P2p
-!
-!
-!
-VLAN0099
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32867
-             Address     aabb.cc00.1000
-             This bridge is the root
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
-             Address     aabb.cc00.1000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Desg FWD 56        128.65   P2p
-Po2                 Desg FWD 56        128.66   P2p
-</code></pre>
-</details>
-<details>
-<summary>S2</summary>
-<pre><code>
-show spanning-tree
-!
-VLAN0001
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32769
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Root FWD 56        128.65   P2p
-Po3                 Desg FWD 56        128.66   P2p
-!
-!
-!
-VLAN0010
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32778
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Et0/0               Desg FWD 100       128.1    P2p
-Po1                 Root FWD 56        128.65   P2p
-Po3                 Desg FWD 56        128.66   P2p
-!
-!
-!
-VLAN0099
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32867
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel1)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
-             Address     aabb.cc00.2000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po1                 Root FWD 56        128.65   P2p
-Po3                 Desg FWD 56        128.66   P2p
-</code></pre>
-</details>
-<details>
-<summary>S3</summary>
-<pre><code>
-show spanning-tree
-!
-VLAN0001
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32769
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel2)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
-             Address     aabb.cc00.3000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po2                 Root FWD 56        128.65   P2p
-Po3                 Altn BLK 56        128.66   P2p
-!
-!
-!
-VLAN0010
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32778
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel2)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
-             Address     aabb.cc00.3000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Et0/0               Desg FWD 100       128.1    P2p
-Po2                 Root FWD 56        128.65   P2p
-Po3                 Altn BLK 56        128.66   P2p
-!
-!
-!
-VLAN0099
-  Spanning tree enabled protocol ieee
-  Root ID    Priority    32867
-             Address     aabb.cc00.1000
-             Cost        56
-             Port        65 (Port-channel2)
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-!
-  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
-             Address     aabb.cc00.3000
-             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
-             Aging Time  300 sec
-!
-Interface           Role Sts Cost      Prio.Nbr Type
-------------------- ---- --- --------- -------- --------------------------------
-Po2                 Root FWD 56        128.65   P2p
-Po3                 Altn BLK 56        128.66   P2p
-</code></pre>
-</details>
-
-Проверка сквозного соединения между PC(A,B,C)
-
-<details>
-<summary>A</summary>
-<pre><code>
-ping 192.168.10.2
-!
-84 bytes from 192.168.10.2 icmp_seq=1 ttl=64 time=2.621 ms
-84 bytes from 192.168.10.2 icmp_seq=2 ttl=64 time=2.695 ms
-84 bytes from 192.168.10.2 icmp_seq=3 ttl=64 time=2.605 ms
-84 bytes from 192.168.10.2 icmp_seq=4 ttl=64 time=2.496 ms
-84 bytes from 192.168.10.2 icmp_seq=5 ttl=64 time=2.569 ms
-!
-A> ping 192.168.10.3
-!
-84 bytes from 192.168.10.3 icmp_seq=1 ttl=64 time=2.087 ms
-84 bytes from 192.168.10.3 icmp_seq=2 ttl=64 time=2.509 ms
-84 bytes from 192.168.10.3 icmp_seq=3 ttl=64 time=2.598 ms
-84 bytes from 192.168.10.3 icmp_seq=4 ttl=64 time=2.327 ms
-84 bytes from 192.168.10.3 icmp_seq=5 ttl=64 time=2.718 ms
-</code></pre>
-</details>
-<details>
-<summary>B</summary>
-<pre><code>
- ping 192.168.10.1
-!
-84 bytes from 192.168.10.1 icmp_seq=1 ttl=64 time=2.293 ms
-84 bytes from 192.168.10.1 icmp_seq=2 ttl=64 time=2.464 ms
-84 bytes from 192.168.10.1 icmp_seq=3 ttl=64 time=2.342 ms
-84 bytes from 192.168.10.1 icmp_seq=4 ttl=64 time=2.445 ms
-84 bytes from 192.168.10.1 icmp_seq=5 ttl=64 time=1.604 ms
-!
-B> ping 192.168.10.3
-!
-84 bytes from 192.168.10.3 icmp_seq=1 ttl=64 time=4.133 ms
-84 bytes from 192.168.10.3 icmp_seq=2 ttl=64 time=3.311 ms
-84 bytes from 192.168.10.3 icmp_seq=3 ttl=64 time=3.629 ms
-84 bytes from 192.168.10.3 icmp_seq=4 ttl=64 time=1.743 ms
-84 bytes from 192.168.10.3 icmp_seq=5 ttl=64 time=2.894 ms
-</code></pre>
-</details>
-<details>
-<summary>C</summary>
-<pre><code>
-ping 192.168.10.1
-!
-84 bytes from 192.168.10.1 icmp_seq=1 ttl=64 time=2.229 ms
-84 bytes from 192.168.10.1 icmp_seq=2 ttl=64 time=2.091 ms
-84 bytes from 192.168.10.1 icmp_seq=3 ttl=64 time=1.395 ms
-84 bytes from 192.168.10.1 icmp_seq=4 ttl=64 time=1.397 ms
-84 bytes from 192.168.10.1 icmp_seq=5 ttl=64 time=2.571 ms
-!
-VPCS> ping 192.168.10.2
-!
-84 bytes from 192.168.10.2 icmp_seq=1 ttl=64 time=3.392 ms
-84 bytes from 192.168.10.2 icmp_seq=2 ttl=64 time=3.415 ms
-84 bytes from 192.168.10.2 icmp_seq=3 ttl=64 time=1.698 ms
-84 bytes from 192.168.10.2 icmp_seq=4 ttl=64 time=3.117 ms
-84 bytes from 192.168.10.2 icmp_seq=5 ttl=64 time=1.612 ms
-</code></pre>
-</details>
+Done!
