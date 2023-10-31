@@ -1,37 +1,37 @@
- ## Лабораторная работа. Настройка расширенных сетей VLAN, VTP и DTP
+ ## Laboratory work. Configuring Extended VLAN, VTP and STP networks
 
-#### Топология
+#### Topology
 
 ![img](img/VLAN.png)
 
 
-#### Таблица адресации
+#### Addressing table
 
-| Заголовок таблицы | Интерфейс | IP-адрес     | Маска подсети |
-| ----------------- | --------- | ------------ | ------------- |
-| S1                | VLAN 99   | 192.168.99.1 | 255.255.255.0 |
-| S2                | VLAN 99   | 192.168.99.2 | 255.255.255.0 |
-| S3                | VLAN 99   | 192.168.99.3 | 255.255.255.0 |
-| PC-A              | NIC       | 192.168.10.1 | 255.255.255.0 |
-| PC-B              | NIC       | 192.168.20.1 | 255.255.255.0 |
-| PC-C              | NIC       | 192.168.10.2 | 255.255.255.0 |
+| Table header | Interface | IP address   | Subnet Mask   |
+| ------------ | --------- | ------------ | ------------- |
+| S1           | VLAN 99   | 192.168.99.1 | 255.255.255.0 |
+| S2           | VLAN 99   | 192.168.99.2 | 255.255.255.0 |
+| S3           | VLAN 99   | 192.168.99.3 | 255.255.255.0 |
+| PC-A         | NIC       | 192.168.10.1 | 255.255.255.0 |
+| PC-B         | NIC       | 192.168.20.1 | 255.255.255.0 |
+| PC-C         | NIC       | 192.168.10.2 | 255.255.255.0 |
 
 
-#### **Домашнее задание**
+#### **Homework**
 
 ##### VLAN
 
-**Цель:** Настройка VTP Настройка DTP Добавление сетей VLAN и назначение портов Настройка расширенной сети VLAN 
+**Goal:** Setting up VTP, Setting up DTP, Adding VLANs and Assigning Ports, Setting up an Extended VLAN
 
-В этой лабораторной работе вы настроите магистральные каналы между этими коммутаторами
- Все коммутаторы будут настроены на использование VTP для обновлений сетей VLAN. S2 будет настроен в качестве сервера. 
- Настройка динамического протокола транкинга (DTP)
- Добавление сетей VLAN и назначение портов
- В 4 части вам предстоит перевести VTP на коммутаторе S1 в прозрачный режим и создать сеть VLAN расширенного диапазона на коммутаторе S1.
+In this lab, you will configure the trunk links between these switches
+All switches will be configured to use VTP for VLAN updates. S2 will be configured as a server. 
+Configuring Dynamic Trunking Protocol (DTP)
+Adding VLANs and Assigning Ports
+In Part 4, you will have to switch the VTP on the S1 switch to transparent mode and create an extended-range VLAN network on the S1 switch.
 
-#### Создание сети и настройка основных параметров устройства:
+#### Creating a network and configuring basic device parameters:
 
-1. Создать сеть согласно топологии(уже соединил согсно схеме)
+1. Create a network according to the topology (already connected according to the scheme)
 
  <details>
 <summary>S1</summary>
@@ -72,12 +72,12 @@ hostname S3
 do copy run start 
 </code></pre>
 </details>
-2. Чтобы отключить поиск по DNS на каждом коммутаторе прописываем в режиме конфигурации
+2. To disable DNS lookup on each switch, we prescribe in configuration mode
 
    ```
    no ip domain-lookup
    ```
-3. В режиме конфигурации пропишем : пароль на расширенный режим, и на вход устройства ,а также синхронизацию CLI . 
+3. In the configuration mode, we will write : the password for the privileged mode, and for the device input, as well as CLI synchronize unsolicited messages, log messages, and debug output with the solicited user input and prompts. 
  <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -90,14 +90,14 @@ logging synchronous
 </code></pre>
 </details>
 
-4. Настроим баннер при входе, при входе на устройство
+4. Set up a banner when you log in to the device
  <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
 Banner motd “**This is a secure system. Authorized Access Only!
 </code></pre>
 </details>
-5. Заводим протокол VTP на коммутаторах
+5. We start the VTP protocol on the switches
 
  <details>
 <summary>S1</summary>
@@ -128,7 +128,7 @@ vtp version 3
 vtp mode client
 </code></pre>
 </details>
-6. Переведем порты в режим TRUNK для того,чтобы работал протокол VTP
+6. We will switch the ports to TRUNK mode in order for the VTP protocol to work
 
  <details>
 <summary>S1,S2,S3</summary>
@@ -152,7 +152,7 @@ Et0/1       on               802.1q         trunking      1
 Et0/3       on               802.1q         trunking      1
 </code></pre>
 </details>
-7. На коммутаторе S2 (сервер VTP домена) заведём новые VLAN
+7. On the S2 switch (VTP domain server), we will create new VLANs
 
  <details>
 <summary>S2</summary>
@@ -169,7 +169,7 @@ vlan 99
 name Management  
 </code></pre>
 </details>
-Посмотрим добавились ли VLAN на других устройствах
+Let's see if VLANs have been added on other devices
  <details>
 <summary>S1</summary>
 <pre><code>
@@ -207,7 +207,7 @@ VLAN Name                             Status    Ports
 </code></pre>
 </details>
 
-8. Проверим утилитой ping связанность ПК A-C
+8. Let's check the connectivity of PC A-C with the ping utility
 <details>
 <summary>PC A</summary>
 <pre><code>

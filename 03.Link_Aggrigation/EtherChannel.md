@@ -1,29 +1,29 @@
-## Лабораторная работа. Настройка EtherChannel 
+## Laboratory work. Setting up the EtherChannel 
 
-### Топология
+### Topology
 
 ![](img/Etherchannel.png)
 
-### Таблица адресации
+### Addressing table
 
-| Устройство | Интерфейс | IP-адрес      | Маска подсети |
-| ---------- | --------- | ------------- | ------------- |
-| S1         | VLAN 99   | 192.168.99.11 | 255.255.255.0 |
-| S2         | VLAN 99   | 192.168.99.12 | 255.255.255.0 |
-| S3         | VLAN 99   | 192.168.99.13 | 255.255.255.0 |
-| PC-A       | NIC       | 192.168.10.1  | 255.255.255.0 |
-| PC-B       | NIC       | 192.168.10.2  | 255.255.255.0 |
-| PC-C       | NIC       | 192.168.10.3  | 255.255.255.0 |
+| Device | Interface | IP address    | Subnet Mask   |
+| ------ | --------- | ------------- | ------------- |
+| S1     | VLAN 99   | 192.168.99.11 | 255.255.255.0 |
+| S2     | VLAN 99   | 192.168.99.12 | 255.255.255.0 |
+| S3     | VLAN 99   | 192.168.99.13 | 255.255.255.0 |
+| PC-A   | NIC       | 192.168.10.1  | 255.255.255.0 |
+| PC-B   | NIC       | 192.168.10.2  | 255.255.255.0 |
+| PC-C   | NIC       | 192.168.10.3  | 255.255.255.0 |
 
-### Цели
+### Goals
 
-**Часть 1. Настройка базовых параметров коммутатора**
-**Часть 2. Настройка PAgP**
-**Часть 3. Настройка LACP**
+**Part 1. Configuring basic Switch parameters**
+**Part 2. Configuration PAgP**
+**Part 3. Configuration LACP**
 
-### Настройка базовых параметров коммутатора
+### Configuring basic Switch parameters
 
-Для начало настроим имя устройства:
+To begin with, configure the device name:
 
 <details>
 <summary>S1</summary>
@@ -49,7 +49,7 @@ conf t
 hos S3
 </code></pre>
 </details>
-Зададим IP адресацию для устройств согласно условию:
+We will set the IP addressing for the devices according to the condition:
 
 <details>
 <summary>S1</summary>
@@ -79,7 +79,7 @@ exit
 </code></pre>
 </details>
 
-Отключим поиск DNS , зашифруем пароли ,а также назначим баннерное сообщение:
+Disable DNS lookup , encrypt passwords , and assign a banner message:
 
 <details>
 <summary>S1,S2,S3</summary>
@@ -89,7 +89,7 @@ service password-encryption
 Banner motd "This is a secure system. Authorized Access Only!" 
 </code></pre>
 </details>
-Зададим пароль на привилегированный режим , консольный режим и на VTY ,а также сервис по синхронной регистрации.
+We will set a password for privileged mode, console mode and VTY, as well as a service for synchronous registration.
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -108,7 +108,7 @@ exit
 </code></pre>
 </details>
 
-Отключим все порты на устройстве, кроме тех,что смотрят в сторону ПК
+Disable all ports on the device, except those that look towards the PC
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -118,7 +118,7 @@ int ran e1/0-3
 shut 
 </code></pre>
 </details>
-создадим VLAN 99 , 10 именем **Management** и **Staff** соответственно
+create VLAN 99 , 10; With the name **Management** and **Staff** respectively
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -128,7 +128,7 @@ vlan 10
 name Staff 
 </code></pre>
 </details>
-Настроим порты коммутатора с присоединёнными узлами в качестве портов доступа к сети VLAN 10:
+Configure the switch ports with attached nodes as access ports to the VLAN 10 network:
 <details>
 <summary>S1,S2,S3</summary>
 <pre><code>
@@ -137,7 +137,7 @@ sw m ac
 sw ac vl 10
 </code></pre>
 </details>
-Сохраним конфигурацию:
+Save the configuration:
 
 <details>
 <summary>S1,S2,S3</summary>
@@ -147,7 +147,7 @@ do copy run start
 </code></pre>
 </details>
 
-Пропишем на ПК:
+We will save on the PC:
 
 <details>
 <summary>A</summary>
@@ -171,9 +171,9 @@ save
 </code></pre>
 </details>
 
-### Настройка протокола PAgP
+### Configuring the PAgP
 
-Настроим для S1 и S2 PAgP :
+Configure for S1 and S2 PAgP :
 
 <details>
 <summary>S1</summary>
@@ -194,7 +194,7 @@ exit
 </code></pre>
 </details>
 
-Проверка конфигурации на портах для S1 и S2
+Checking the configuration on ports for S1 and S2
 
 ```
 do show run interface e0/1
@@ -292,7 +292,7 @@ Appliance trust: none
 </code></pre>
 </details>
 
-Убеждаемся, что порты объединены
+Making sure that the ports are combined
 
 ```
 do show etherchannel summary
@@ -355,7 +355,7 @@ Group  Port-channel  Protocol    Ports
 </code></pre>
 </details>
 
-Настройте транковые порты.
+Configure trunk ports.
 
 <details>
 <summary>S1,S2</summary>
@@ -367,7 +367,7 @@ switchport trunk native vlan 99
 </code></pre>
 </details>
 
-Убедитесь в том, что порты настроены в качестве транковых.
+Make sure that the ports are configured as trunk ports.
 
 ```
 do show run interface e0/1
@@ -534,7 +534,7 @@ Po1                 Root FWD 56        128.65   P2p
 </code></pre>
 </details>
 
-### Настройка протокола LACP
+### Configuring the protocol LACP
 
 <details>
 <summary>S1</summary>
@@ -583,7 +583,7 @@ exit
 </code></pre>
 </details>
 
-Диагностика
+Diagnostics
 
 ```
 show etherchannel summary
@@ -626,7 +626,7 @@ show etherchannel summary
 </code></pre>
 </details>
 
-Проверка трафика и работы протокола STP
+Checking traffic and protocol operation STP
 
 ```
 show spanning-tree
@@ -825,7 +825,7 @@ Po3                 Altn BLK 56        128.66   P2p
 </code></pre>
 </details>
 
-Проверка сквозного соединения между PC(A,B,C)
+Checking the end-to-end connection between PC(A,B,C)
 
 <details>
 <summary>A</summary>
