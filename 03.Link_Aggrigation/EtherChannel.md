@@ -100,12 +100,14 @@ password cisco
 login
 exit
 line con 0
+exec-timeout 0 0
 logging synchronous
 password cisco
 login
 exit 
 </code></pre>
 </details>
+
 Отключим все порты на устройстве, кроме тех,что смотрят в сторону ПК
 <details>
 <summary>S1,S2,S3</summary>
@@ -141,9 +143,9 @@ sw ac vl 10
 <summary>S1,S2,S3</summary>
 <pre><code>
 do copy run start
+[Enter]
 </code></pre>
 </details>
-
 
 Пропишем на ПК:
 
@@ -168,6 +170,7 @@ ip 192.168.10.3/24
 save 
 </code></pre>
 </details>
+
 ### Настройка протокола PAgP
 
 Настроим для S1 и S2 PAgP :
@@ -177,7 +180,8 @@ save
 <pre><code>
 int ran e0/1-2
 channel-group 1 mode desirable
-no shut 
+no shut
+exit
 </code></pre>
 </details>
 <details>
@@ -186,15 +190,388 @@ no shut
 int ran e0/1-2
 channel-group 1 mode auto
 no shut 
+exit
 </code></pre>
 </details>
 
-Проверка конфигурации на портах для S1
+Проверка конфигурации на портах для S1 и S2
 
+```
+do show run interface e0/1
+```
 <details>
 <summary>S1</summary>
 <pre><code>
 do show run interface e0/1
-do show interfaces f0/3 switchport
+!
+interface Ethernet0/1
+ channel-group 1 mode desirable
+end
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+do show run interface e0/1
+!
+interface Ethernet0/1
+ channel-group 1 mode auto
+end
+</code></pre>
+</details>
+```
+do show interfaces e0/1 switchport
+```
+
+<details>
+<summary>S1</summary>
+<pre><code>
+do show interfaces e0/1 switchport
+!
+Name: Et0/1
+Switchport: Enabled
+Administrative Mode: dynamic auto
+Operational Mode: static access (member of bundle Po1)
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: On
+Access Mode VLAN: 1 (default)
+Trunking Native Mode VLAN: 1 (default)
+Administrative Native VLAN tagging: enabled
+Voice VLAN: none
+Administrative private-vlan host-association: none
+Administrative private-vlan mapping: none
+Administrative private-vlan trunk native VLAN: none
+Administrative private-vlan trunk Native VLAN tagging: enabled
+Administrative private-vlan trunk encapsulation: dot1q
+Administrative private-vlan trunk normal VLANs: none
+Administrative private-vlan trunk associations: none
+Administrative private-vlan trunk mappings: none
+Operational private-vlan: none
+Trunking VLANs Enabled: ALL
+Pruning VLANs Enabled: 2-1001
+Capture Mode Disabled
+Capture VLANs Allowed: ALL
+!
+Protected: false
+Appliance trust: none
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+do show interfaces e0/1 switchport
+!
+Name: Et0/1
+Switchport: Enabled
+Administrative Mode: dynamic auto
+Operational Mode: static access (member of bundle Po1)
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: On
+Access Mode VLAN: 1 (default)
+Trunking Native Mode VLAN: 1 (default)
+Administrative Native VLAN tagging: enabled
+Voice VLAN: none
+Administrative private-vlan host-association: none
+Administrative private-vlan mapping: none
+Administrative private-vlan trunk native VLAN: none
+Administrative private-vlan trunk Native VLAN tagging: enabled
+Administrative private-vlan trunk encapsulation: dot1q
+Administrative private-vlan trunk normal VLANs: none
+Administrative private-vlan trunk associations: none
+Administrative private-vlan trunk mappings: none
+Operational private-vlan: none
+Trunking VLANs Enabled: ALL
+Pruning VLANs Enabled: 2-1001
+Capture Mode Disabled
+Capture VLANs Allowed: ALL
+!
+Protected: false
+Appliance trust: none
+</code></pre>
+</details>
+
+Убеждаемся, что порты объединены
+
+```
+do show etherchannel summary
+```
+
+<details>
+<summary>S1</summary>
+<pre><code>
+do show etherchannel summary
+!
+Flags:  
+D - down	P - bundled in port-channel
+I - stand-alone	s - suspended
+H - Hot-standby (LACP only)
+R - Layer3      S - Layer2
+U - in use      N - not in use, no aggregation
+f - failed to allocate aggregator
+M - not in use, minimum links not met
+m - not in use, port not aggregated due to minimum links not met
+u - unsuitable for bundling
+w - waiting to be aggregated
+d - default port    
+A - formed by Auto LAG
+!
+!
+Number of channel-groups in use: 1
+Number of aggregators:           1
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+do show etherchannel summary
+!
+Flags:  
+D - down	P - bundled in port-channel
+I - stand-alone	s - suspended
+H - Hot-standby (LACP only)
+R - Layer3      S - Layer2
+U - in use      N - not in use, no aggregation
+f - failed to allocate aggregator
+M - not in use, minimum links not met
+m - not in use, port not aggregated due to minimum links not met
+u - unsuitable for bundling
+w - waiting to be aggregated
+d - default port    
+A - formed by Auto LAG
+!
+!
+Number of channel-groups in use: 1
+Number of aggregators:           1
+!
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+1      Po1(SU)         PAgP      Et0/1(P)    Et0/2(P)
+</code></pre>
+</details>
+
+Настройте транковые порты.
+
+<details>
+<summary>S1,S2</summary>
+<pre><code>
+interface port-channel 1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk native vlan 99
+</code></pre>
+</details>
+
+Убедитесь в том, что порты настроены в качестве транковых.
+
+```
+do show run interface e0/1
+```
+
+<details>
+<summary>S1,S2</summary>
+<pre><code>
+do show run interface e0/1
+!
+interface Ethernet0/1
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode desirable
+end
+</code></pre>
+</details>
+
+```
+do show interfaces trunk
+```
+
+<details>
+<summary>S1,S2</summary>
+<pre><code>
+do show interfaces trunk
+!
+Port        Mode             Encapsulation  Status        Native vlan
+Po1         on               802.1q         trunking      99
+!
+Port        Vlans allowed on trunk
+Po1         1-4094
+!
+Port        Vlans allowed and active in management domain
+Po1         1,10,99
+!
+Port        Vlans in spanning tree forwarding state and not pruned
+Po1         1,10,99
+</code></pre>
+</details>
+
+```
+do show spanning-tree 
+```
+<details>
+<summary>S1</summary>
+<pre><code>
+do show spanning-tree
+!
+VLAN0001
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32769
+             Address     aabb.cc00.1000
+             This bridge is the root
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
+             Address     aabb.cc00.1000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Po1                 Desg FWD 56        128.65   P2p
+!
+!
+!
+VLAN0010
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32778
+             Address     aabb.cc00.1000
+             This bridge is the root
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
+             Address     aabb.cc00.1000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Et0/0               Desg FWD 100       128.1    P2p
+Po1                 Desg FWD 56        128.65   P2p
+!
+!
+!
+VLAN0099
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32867
+             Address     aabb.cc00.1000
+             This bridge is the root
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
+             Address     aabb.cc00.1000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Po1                 Desg FWD 56        128.65   P2p
+</code></pre>
+</details>
+
+<details>
+<summary>S2</summary>
+<pre><code>
+do show spanning-tree
+!
+VLAN0001
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32769
+             Address     aabb.cc00.1000
+             Cost        56
+             Port        65 (Port-channel1)
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
+             Address     aabb.cc00.2000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Po1                 Root FWD 56        128.65   P2p
+!
+!
+VLAN0010
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32778
+             Address     aabb.cc00.1000
+             Cost        56
+             Port        65 (Port-channel1)
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
+             Address     aabb.cc00.2000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Et0/0               Desg FWD 100       128.1    P2p
+Po1                 Root FWD 56        128.65   P2p
+!
+!
+VLAN0099
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32867
+             Address     aabb.cc00.1000
+             Cost        56
+             Port        65 (Port-channel1)
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+!
+  Bridge ID  Priority    32867  (priority 32768 sys-id-ext 99)
+             Address     aabb.cc00.2000
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+!
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Po1                 Root FWD 56        128.65   P2p
+</code></pre>
+</details>
+
+### Настройка протокола LACP
+
+<details>
+<summary>S1</summary>
+<pre><code>
+!
+interface range e1/2-3
+switchport tr en d
+sw m tr
+sw tr n v 99
+channel-group 2 mode active
+!
+</code></pre>
+</details>
+<details>
+<summary>S2</summary>
+<pre><code>
+interface range e1/0-1
+switchport tr en d
+sw m tr
+sw tr n v 99
+channel-group 3 mode passive
+</code></pre>
+</details>
+<details>
+<summary>S3</summary>
+<pre><code>
+interface range e1/2-3
+switchport tr en d
+sw m tr
+sw tr n v 99
+channel-group 2 mode passive
+exit
+!
+interface range e1/0-1
+switchport tr en d
+sw m tr
+sw tr n v 99
+channel-group 3 mode active
 </code></pre>
 </details>
