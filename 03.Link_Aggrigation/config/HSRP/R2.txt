@@ -32,6 +32,8 @@ router ospf 1
  network 10.2.2.0 0.0.0.3 area 0
  default-information originate
 ip route 0.0.0.0 0.0.0.0 lo0
+exit
+!
 end
 !
 wr
