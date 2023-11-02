@@ -298,6 +298,7 @@ O        192.168.23.0 [110/128] via 192.168.13.2, 00:05:31, Serial1/1
                       [110/128] via 192.168.12.2, 00:05:41, Serial1/0
 </code></pre>
 </details>
+
 **show ip protocols** 
 
 <details>
@@ -398,6 +399,7 @@ Se1/0           1     0                   192.168.12.1/30      64      P2P   1/1
 Et0/0            1     0                   192.168.1.1/24        10      DR    0/0
 </code></pre>
 </details>
+
 **Show ip ospf interface**
 
 <details>
@@ -702,6 +704,7 @@ Ethernet0/0 is up, line protocol is up
   Suppress hello for 0 neighbor(s)
 </code></pre>
 </details>
+
 ```
 R1(config)# router ospf 1
 R1(config-router)# passive-interface e0/0
