@@ -1,41 +1,41 @@
-# Лабораторная работа. Настройка базового протокола OSPFv2 для одной области
+# Laboratory work. Configuring the basic OSPFv2 protocol for one area
 
-## Топология
+## Topology
 
 ![OSPF](img/OSPFv2.png)
 
-## Таблица адресации
+## Addressing table
 
-| Устройство | Интерфейс    | IP-адрес     | Маска подсети   | Шлюз по умолчанию |
-| ---------- | ------------ | ------------ | --------------- | ----------------- |
-| R1         | G0/0         | 192.168.1.1  | 255.255.255.0   | —                 |
-|            | S0/0/0 (DCE) | 192.168.12.1 | 255.255.255.252 | —                 |
-|            | S0/0/1       | 192.168.13.1 | 255.255.255.252 | —                 |
-| R2         | G0/0         | 192.168.2.1  | 255.255.255.0   | —                 |
-|            | S0/0/0       | 192.168.12.2 | 255.255.255.252 | —                 |
-|            | S0/0/1 (DCE) | 192.168.23.1 | 255.255.255.252 | —                 |
-| R3         | G0/0         | 192.168.3.1  | 255.255.255.0   | —                 |
-|            | S0/0/0 (DCE) | 192.168.13.2 | 255.255.255.252 | —                 |
-|            | S0/0/1       | 192.168.23.2 | 255.255.255.252 | —                 |
-| PC-A       | NIC          | 192.168.1.3  | 255.255.255.0   | 192.168.1.1       |
-| PC-B       | NIC          | 192.168.2.3  | 255.255.255.0   | 192.168.2.1       |
-| PC-C       | NIC          | 192.168.3.3  | 255.255.255.0   | 192.168.3.1       |
+| Device | Interface    | IP address   | Subnet Mask     | Gateway     |
+| ------ | ------------ | ------------ | --------------- | ----------- |
+| R1     | G0/0         | 192.168.1.1  | 255.255.255.0   | —           |
+|        | S0/0/0 (DCE) | 192.168.12.1 | 255.255.255.252 | —           |
+|        | S0/0/1       | 192.168.13.1 | 255.255.255.252 | —           |
+| R2     | G0/0         | 192.168.2.1  | 255.255.255.0   | —           |
+|        | S0/0/0       | 192.168.12.2 | 255.255.255.252 | —           |
+|        | S0/0/1 (DCE) | 192.168.23.1 | 255.255.255.252 | —           |
+| R3     | G0/0         | 192.168.3.1  | 255.255.255.0   | —           |
+|        | S0/0/0 (DCE) | 192.168.13.2 | 255.255.255.252 | —           |
+|        | S0/0/1       | 192.168.23.2 | 255.255.255.252 | —           |
+| PC-A   | NIC          | 192.168.1.3  | 255.255.255.0   | 192.168.1.1 |
+| PC-B   | NIC          | 192.168.2.3  | 255.255.255.0   | 192.168.2.1 |
+| PC-C   | NIC          | 192.168.3.3  | 255.255.255.0   | 192.168.3.1 |
 
-## Задачи
+## Tasks
 
-Часть 1. Создание сети и настройка основных параметров устройства
+Part 1. Creating a network and configuring the basic parameters of the device
 
-Часть 2. Настройка и проверка маршрутизации OSPF
+Part 2. Configuring and verifying OSPF Routing
 
-Часть 3. Изменение назначений идентификаторов маршрутизаторов
+Part 3. Changing the purpose of router IDs
 
-Часть 4. Настройка пассивных интерфейсов OSPF
+Part 4. Configuring Passive OSPF Interfaces
 
-Часть 5. Изменение метрик OSPF
+Part 5. Changing the OSPF metric
 
 
 
-### Создание сети и настройка основных параметров устройства
+### Creating a network and configuring basic device parameters
 
 <details>
 <summary>R1</summary>
@@ -194,9 +194,9 @@ ip 192.168.3.3 24 192.168.3.1
 </details>
 
 
-### Настройка и проверка маршрутизации OSPF
+### Configuring and verifying OSPF routing
 
-Настроим протокол OSPF на роутерах:
+Configure the OSPF protocol on routers:
 
 <details>
 <summary>R1</summary>
@@ -226,7 +226,7 @@ network 192.168.23.0 0.0.0.3 area 0
 </code></pre>
 </details>
 
-Проверим информацию о соседних устройствах и маршрутизации OSPF
+Let's check the information about neighboring devices and OSPF routing
 
 ```
 show ip ospf neighbor
@@ -398,7 +398,6 @@ Se1/0           1     0                   192.168.12.1/30      64      P2P   1/1
 Et0/0            1     0                   192.168.1.1/24        10      DR    0/0
 </code></pre>
 </details>
-
 **Show ip ospf interface**
 
 <details>
@@ -466,7 +465,7 @@ Ethernet0/0 is up, line protocol is up
 </code></pre>
 </details>
 
-Проверяем работу протокола OSPF с помощью ping
+We check the operation of the OSPF protocol using ping
 
 <details>
 <summary>PC-A</summary>
@@ -488,9 +487,10 @@ PC-A> ping 192.168.3.3
 84 bytes from 192.168.3.3 icmp_seq=5 ttl=62 time=10.881 ms
 </code></pre>
 </details>
-###   Изменение назначенных идентификаторов маршрутизаторов
 
-Если RouterID нет, то он возьмет его с loopback интерфейса. Проверим это! 
+###   Changing assigned Router IDs
+
+If there is no RouterID, then it will take it from the loopback interface. Let's check it out! 
 
 <details>
 <summary>R1</summary>
@@ -521,7 +521,7 @@ do wr
 clear ip ospf process
 ```
 
-Посмотрим что изменилось
+Let's see what has changed
 
 ```
 show ip protocols
@@ -579,7 +579,7 @@ Neighbor ID     Pri   State           Dead Time   Address         Interface
 </code></pre>
 </details>
 
-Поменяем идентификатор с помощью Router id теперь на:
+Change the ID using Router id now to:
 
 | R1          | R2          | R3          |
 | ----------- | ----------- | ----------- |
@@ -668,11 +668,13 @@ Neighbor ID     Pri   State           Dead Time   Address         Interface
 </code></pre>
 </details>
 
-###   Настройка пассивных интерфейсов OSPF
+###   Configuring Passive OSPF Interfaces
 
-Проверим интерфейс который идет в сторону ПК
+Let's check the interface that goes towards the PC
 
+```
 show ip ospf interface e0/0
+```
 
 <details>
 <summary>R1</summary>
@@ -700,9 +702,10 @@ Ethernet0/0 is up, line protocol is up
   Suppress hello for 0 neighbor(s)
 </code></pre>
 </details>
-
+```
 R1(config)# router ospf 1
 R1(config-router)# passive-interface e0/0
+```
 
 <details>
 <summary>R1</summary>
@@ -712,7 +715,7 @@ R1(config-router)# passive-interface e0/0
 </code></pre>
 </details>
 
-Повторно выполните команду **show ip ospf interface e0/0**, чтобы убедиться, что интерфейс E0/0 стал пассивным.
+Run the **show ip ospf interface e0/0** command again to make sure that the E0/0 interface has become passive.
 
 <details>
 <summary>R1</summary>
@@ -741,9 +744,7 @@ Ethernet0/0 is up, line protocol is up
   Suppress hello for 0 neighbor(s)
 </code></pre>
 </details>
-
-
-Введите команду **show ip route** на маршрутизаторах R2 и R3, чтобы убедиться, что маршрут к сети 192.168.1.0/24 остается доступным.
+Enter the command **show ip route** on routers R2 and R3 to make sure that the route to the 192.168.1.0/24 network remains available.
 
 <details>
 <summary>R2</summary>
@@ -814,9 +815,9 @@ L        192.168.23.2/32 is directly connected, Serial1/1
 </code></pre>
 </details>
 
-###  Настройте на маршрутизаторе пассивный интерфейс в качестве интерфейса по умолчанию.
+###  Configure the passive interface on the router as the default interface.
 
-команду **show ip ospf neighbor** на маршрутизаторе R1, чтобы убедиться, что R2 указан в качестве соседнего устройства OSPF
+command **show ip ospf neighbor** on router R1 to make sure that R2 is listed as an OSPF neighbor device
 
 <details>
 <summary>R1</summary>
@@ -828,19 +829,43 @@ Neighbor ID     Pri   State           Dead Time   Address         Interface
 22.22.22.22       0   FULL/  -        00:00:38    192.168.12.2    Serial1/0
 </code></pre>
 </details>
-
-R1(config)# **router ospf 1**
-R1(config-router)# **passive-interface default**
-
 <details>
-<summary>R1</summary>
+<summary>R2</summary>
+<pre><code>
+R2(config-router)#do show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+33.33.33.33       0   FULL/  -        00:00:33    192.168.23.2    Serial1/1
+11.11.11.11       0   FULL/  -        00:00:37    192.168.12.1    Serial1/0
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3(config-router)#do show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+22.22.22.22       0   FULL/  -        00:00:33    192.168.23.1    Serial1/1
+11.11.11.11       0   FULL/  -        00:00:32    192.168.13.1    Serial1/0
+</code></pre>
+</details>
+
+Configure all interfaces as passive by default
+
+```
+router ospf 1
+passive-interface default
+exit
+```
+<details>
+<summary>R1,R2,R3</summary>
 <pre><code>
 router ospf 1
 passive-interface default
-no passive-interface serial 1/0
-no passive-interface serial 1/1
+exit
 </code></pre>
 </details>
+
 
 ```
 do show ospf neighbor
@@ -901,21 +926,26 @@ Serial1/1 is up, line protocol is up
 </code></pre>
 </details>
 
+Turn on the interfaces connected to the neighbors
+
 ```
-R2(config-router)#no passive-interface serial 1/0
-R2(config-router)#no passive-interface serial 1/1
+router ospf 1
+no passive-interface serial 1/0
+no passive-interface serial 1/1
+exit
 ```
 
 <details>
-<summary>R1</summary>
+<summary>R1,R2,R3</summary>
 <pre><code>
 router ospf 1
 no passive-interface serial 1/0
 no passive-interface serial 1/1
+exit
 </code></pre>
 </details>
 
-Повторно выполните команды **show ip route** и **show ip ospf neighbor** 
+Run the commands again **show ip route** and **show ip ospf neighbor** 
 
 <details>
 <summary>R1</summary>
@@ -961,19 +991,13 @@ O        192.168.23.0 [110/128] via 192.168.13.2, 00:00:43, Serial1/1
 </code></pre>
 </details>
 
-Сеть восстановлена, полное соседство сохранилось 
+The network has been restored, the full neighborhood has been preserved.
 
-### Изменение метрик OSPF
+### Changing the OSPF metric
 
-------
+The default reference bandwidth for OSPF is 100 Mbps (Fast Ethernet speed). But the channel speed in most modern network infrastructure devices exceeds 100 Mbit/s. Since the OSPF cost metric must be an integer, the cost for all channels with a transfer rate of 100 Mbit/s and higher is 1. Therefore, the Fast Ethernet, Gigabit Ethernet and 10G Ethernet interfaces have the same cost. Therefore, to account for networks with channels whose speed exceeds 100 Mbit/s, a higher value of the reference bandwidth is necessary.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-------
-
-Эталонная пропускная способность по умолчанию для OSPF равна 100 Мбит/с (скорость Fast Ethernet). Но скорость каналов в большинстве современных устройств сетевой инфраструктуры превышает 100 Мбит/c. Поскольку метрика стоимости OSPF должна быть целым числом, стоимость для всех каналов со скоростью передачи 100 Мбит/c и выше равна 1. Поэтому интерфейсы Fast Ethernet, Gigabit Ethernet и 10G Ethernet имеют одинаковую стоимость. Следовательно, для учета сетей с каналами, скорость которых превышает 100 Мбит/c, необходимо более высокое значение эталонной пропускной способности.
-
-Выполним команду **show interface** на маршрутизаторе R1, чтобы просмотреть значение пропускной способности по умолчанию для интерфейса `Serial1/0`
+Run the **show interface** command on the R1 router to view the default bandwidth value for the interface `Serial1/0`
 
 ```
 R1#show interface Serial1/0
@@ -992,7 +1016,7 @@ Serial1/0 is up, line protocol is up
 </code></pre>
 </details>
 
-Введём команду **show ip route ospf** на маршрутизаторе R1, чтобы определить маршрут к сети 192.168.3.0/24 
+Enter the command **show ip route ospf** on the router R1 to determine the route to the network 192.168.3.0/24
 
 <details>
 <summary>R1</summary>
@@ -1007,94 +1031,256 @@ O        192.168.23.0 [110/128] via 192.168.13.2, 00:12:30, Serial1/1
 </code></pre>
 </details>
 
-Выполним команду **show ip ospf interface** на маршрутизаторе R3, чтобы определить стоимость маршрутизации для интерфейса S1/1.
+The cost is 74
+
+Let's check the path to 192.168.3.1/24
 
 <details>
-<summary>R3</summary>
+<summary>R1</summary>
 <pre><code>
-R3(config-router)#do show ip ospf interface
+R1#traceroute 192.168.3.1
+Type escape sequence to abort.
+Tracing the route to 192.168.3.1
+VRF info: (vrf in name/id, vrf out name/id)
+  1 192.168.13.2 10 msec *  9 msec
+</code></pre>
+</details>
+
+```
+R1 --> 192.168.13.2(R3) --> 192.168.3.1(R3)
+```
+
+Run the **show ip ospf interface Serial1/1** command on the R1 router to see the routing cost for the Serial1/1 interface.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf interface Serial1/1
 Serial1/1 is up, line protocol is up
-  Internet Address 192.168.23.2/30, Area 0, Attached via Network Statement
-  Process ID 1, Router ID 33.33.33.33, Network Type POINT_TO_POINT, Cost: 64
+  Internet Address 192.168.13.1/30, Area 0, Attached via Network Statement
+  Process ID 1, Router ID 11.11.11.11, Network Type POINT_TO_POINT, Cost: 64
 ...
 </code></pre>
 </details>
 
-Выполним  команду **show ip ospf interface S9/0** на маршрутизаторе R1, чтобы просмотреть стоимость маршрутизации для интерфейса S9/0.
+Run the **show ip ospf interface e0/0** command on the R3 router to determine the routing cost for the e0/0 interface.
 
-![image-20200405104532499]( img/20.png)
+<details>
+<summary>R3</summary>
+<pre><code>
+R3(config-router)#do show ip ospf interface e0/0
+Ethernet0/0 is up, line protocol is up
+  Internet Address 192.168.3.1/24, Area 0, Attached via Network Statement
+  Process ID 1, Router ID 33.33.33.33, Network Type BROADCAST, Cost: 10
+...
+</code></pre>
+</details>
+R3 is the owner of the network 192.168.3.0/24 and the cost is 10
 
-Как видно из результатов команды **show ip route**, сумма метрик стоимости этих двух интерфейсов является суммарной стоимостью маршрута к сети 192.168.3.0/24 для маршрутизатора R3, рассчитываемой по формуле 1 + 64 = 65.
+As can be seen from the results of the **show ip route** command, the sum of the cost metrics of these two interfaces is the total cost of the route to the 192.168.3.0/24 network for the R3 router, calculated by the formula 10 + 64 = 74.
 
 
+To change the default reference bandwidth parameter, run the command **auto-cost reference-bandwidth 10000** on router R1. With this parameter, the cost of 10 Gbit/s interfaces will be 1, the cost of 1 Gbit/s interfaces will be 10, and the cost of 100 Mbit/s interfaces will be 100
 
-Чтобы изменить параметр эталонной пропускной способности по умолчанию, выполните команду **auto-cost reference-bandwidth 10000** на маршрутизаторе R1. С этим параметром стоимость интерфейсов 10 Гбит/с будет равна 1, стоимость интерфейсов 1 Гбит/с будет равна 10, а стоимость интерфейсов 100 Мбит/c будет равна 100
+<details>
+<summary>R1,R2,R3</summary>
+<pre><code>
+router ospf 1
+ auto-cost reference-bandwidth 10000
+ exit
+...
+</code></pre>
+</details>
 
-R1(config)# router ospf 1
-R1(config-router)# auto-cost reference-bandwidth 10000
+Let's see how the cost has changed:
 
-![image-20200405110707311]( img/21.png)
+<details>
+<summary>R1,R2,R3</summary>
+<pre><code>
+R1(config-router)#do sh ip route ospf
+!
+O     192.168.2.0/24 [110/7476] via 192.168.12.2, 00:01:52, Serial1/0
+O     192.168.3.0/24 [110/7476] via 192.168.13.2, 00:01:42, Serial1/1
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/12952] via 192.168.13.2, 00:01:42, Serial1/1
+                      [110/12952] via 192.168.12.2, 00:01:42, Serial1/0
+!
+!
+R1(config-router)#do show ip ospf interface Serial1/1
+Serial1/1 is up, line protocol is up
+  Internet Address 192.168.13.1/30, Area 0, Attached via Network Statement
+  Process ID 1, Router ID 11.11.11.11, Network Type POINT_TO_POINT, Cost: 6476
+!
+</code></pre>
+</details>
 
-Как видно, что стоимость увеличилась в 100 раз
+Of course, the cost has changed and now it has not become clearer. It is recommended to change the reference cost only if there are interfaces with a bandwidth of more than 100 Mbit/s.
 
-![image-20200405110935162]( img/22.png)
+To restore the default value for the reference bandwidth, run the command **auto-cost reference-bandwidth 100** on all three routers.
 
-Изменение на маршрутизаторах эталонной пропускной способности по умолчанию с 100 на 10 000 меняет суммарные стоимости всех маршрутизаторов в 100 раз, но стоимость каждого канала и маршрута интерфейса теперь рассчитывается точнее.
+```
+router ospf 1
+auto-cost reference-bandwidth 100
+exit
+```
 
-Чтобы восстановить для эталонной пропускной способности значение по умолчанию, на всех трех маршрутизаторах выполните команду **auto-cost reference-bandwidth 100**.
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip route ospf 
+!
+O     192.168.2.0/24 [110/74] via 192.168.12.2, 00:12:40, Serial1/0
+O     192.168.3.0/24 [110/74] via 192.168.13.2, 00:12:30, Serial1/1
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/128] via 192.168.13.2, 00:12:30, Serial1/1
+                      [110/128] via 192.168.12.2, 00:12:40, Serial1/0
+</code></pre>
+</details>
 
-R1(config-router)# **auto-cost reference-bandwidth 100** 
+### Change the bandwidth for the interface.
 
-![image-20200405111335718]( img/23.png)
+```
+show ip route ospf
+```
 
-### Измените пропускную способность для интерфейса.
+<details>
+<summary>R1</summary>
+<pre><code>
+show ip route ospf
+O     192.168.2.0/24 [110/74] via 192.168.12.2, 00:06:15, Serial1/0
+O     192.168.3.0/24 [110/74] via 192.168.13.2, 00:05:58, Serial1/1
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/128] via 192.168.13.2, 00:05:58, Serial1/1
+                      [110/128] via 192.168.12.2, 00:06:15, Serial1/0
+</code></pre>
+</details>
 
-![image-20200405112903072]( img/24.png)
+```
+show interface Serial1/1
+```
 
-![image-20200405113017262]( img/25.png)
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show interface Serial1/1
+Serial1/1 is up, line protocol is up
+  Hardware is M4T
+  Internet address is 192.168.13.1/30
+  MTU 1500 bytes, BW 1544 Kbit/sec, DLY 20000 usec
+</code></pre>
+</details>
 
-Пропускная способность меняется на интерфейсах , так что поменяем на интерфейсе Serial 8/0 стоимость 128 на 2500 и посмотрим как поменяется метрика маршрута.
+100Mbit / 1.544 Mbit = 64
 
-R1(config)#interface serial 8/0
-R1(config-if)#bandwidth 2500
+The bandwidth changes on the interfaces, so we'll change the cost of 1544 to 2 on the Serial 1/1 interface and see how the route metric changes.
 
-![image-20200405113820028]( img/26.png)
+<details>
+<summary>R1</summary>
+<pre><code>
+interface serial 1/1
+bandwidth 2
+exit
+</code></pre>
+</details>
 
-![image-20200405113843611]( img/27.png)
+```
+R1(config)#do show ip ospf interface Serial 1/1
+Serial1/1 is up, line protocol is up
+  Internet Address 192.168.13.1/30, Area 0, Attached via Network Statement
+  Process ID 1, Router ID 11.11.11.11, Network Type POINT_TO_POINT, Cost: 50000
+  Topology-MTID    Cost    Disabled    Shutdown      Topology Name
+        0           50000     no          no            Base
+```
 
-Как видим, пропал 1 маршрут через 192.168.23.0/30 через Se9/0 . так как Se8/0 является более оптимальным маршрутом. 
+The cost has become very expensive and the route will become unprofitable, let's look at the routing table to make sure of this.
 
-**show ip ospf interface brief** - эта команда в PacketTracer не обрабатывается.
+```
+show ip route ospf
+```
 
-###  Измените стоимость маршрута
+<details>
+<summary>R1</summary>
+<pre><code>
+show ip route ospf
+!
+O     192.168.2.0/24 [110/74] via 192.168.12.2, 00:30:20, Serial1/0
+O     192.168.3.0/24 [110/138] via 192.168.12.2, 00:02:17, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/128] via 192.168.12.2, 00:02:17, Serial1/0
+</code></pre>
+</details>
 
-Для расчёта стоимости канала по умолчанию OSPF использует значение пропускной способности. Но этот расчёт можно изменить, вручную задав стоимость канала с помощью команды **ip ospf cost**. 
 
-![image-20200405113017262]( img/28.png)
+As you can see, the route through 192.168.13.0/30 has become unprofitable, At the moment Se 1/0 is a more optimal route.
 
-Выполним команду **ip ospf cost 1565** для интерфейса S8/0 маршрутизатора R1. Стоимость 1565 оказывается выше суммарной стоимости маршрута, проходящего через маршрутизатор R2 (1562).
+```
+R1(config)#do show ip ospf interface brief
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Se1/1        1     0               192.168.13.1/30    50000 P2P   1/1
+Se1/0        1     0               192.168.12.1/30    64    P2P   1/1
+Et0/0        1     0               192.168.1.1/24     10    DR    0/0
+```
 
-R1(config)# **interface s8/0**
-R1(config-if)# **ip ospf cost 1565**
+Let's put everything back in its place
 
-R1(config-if)#**show ip route ospf** 
+```
+R1(config)#int se1/1
+R1(config-if)#no bandwidth
+R1(config-if)#do show ip ospf interface brief
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Se1/1        1     0               192.168.13.1/30    64    P2P   1/1
+Se1/0        1     0               192.168.12.1/30    64    P2P   1/1
+Et0/0        1     0               192.168.1.1/24     10    DR    0/0
+```
 
-![image-20200405123510562]( img/29.png)
+###  Change the cost of the route
 
-Как видим, все маршруты с Serial 8/0 пропали 
+OSPF uses the bandwidth value to calculate the channel cost by default. But this calculation can be changed by manually setting the cost of the channel using the **ip ospf cost** command. 
 
-Случилось это потому-что маршрутизатор пересчитав маршруты ,посчитал,что через Ser 9/0 более рентабельно гнать трафик ,чем через Ser 8/0 . Маршрут никуда не исчез, его он запомнил и держит на случай отказа Se9/0 .
+<details>
+<summary>R1</summary>
+<pre><code>
+show ip route ospf
+O     192.168.2.0/24 [110/74] via 192.168.12.2, 01:19:47, Serial1/0
+O     192.168.3.0/24 [110/74] via 192.168.13.2, 00:41:10, Serial1/1
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/128] via 192.168.13.2, 00:41:10, Serial1/1
+                      [110/128] via 192.168.12.2, 00:51:44, Serial1/0
+</code></pre>
+</details>
 
-Вопросы для повторения
+Execute the command **ip ospf cost 1565** for the Serial 1/1 interface of the router R1. The cost of 1565 is higher than the total cost of the route passing through router R2 (1562).
 
-1. Почему так важно управлять назначением идентификатора маршрутизатора при использовании протокола OSPF?
+```
+R1(config)# interface Serial1/1
+R1(config-if)# ip ospf cost 1565
+```
 
-   Потому что на основании Router-ID происходят выборы DR и BDR , а также даёт понимание Системному администратору упрощенное понимание сети. (не нужно запоминать какие Loopback там прописаны и какие сети он знает и прописаны на интерфейсах)
+<details>
+<summary>R1</summary>
+<pre><code>
+R1(config-if)#do show ip route ospf
+!
+O     192.168.2.0/24 [110/74] via 192.168.12.2, 01:24:13, Serial1/0
+O     192.168.3.0/24 [110/138] via 192.168.12.2, 00:02:08, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O        192.168.23.0 [110/128] via 192.168.12.2, 00:56:10, Serial1/0
+</code></pre>
+</details>
+As you can see, all routes with Serial1/1 are gone 
 
-2. Почему в этой лабораторной работе не рассматривается процесс выбора DR/BDR?
+This happened because the router recalculated the routes and decided that it was more cost-effective to drive traffic through Serial1/0 than through Serial1/1. The route has not disappeared anywhere, he has memorized it and keeps it in case of Serial1/0 failure.
 
-Потому что соединения point-to-point , в такой сети не могут бегать  LSA 2 типа,а значит и выбираться DR и BDR.
+Questions to repeat
 
-3. Почему рекомендуется настраивать интерфейс OSPF как пассивный?
+1. Why is it so important to manage the assignment of the router ID when using the OSPF protocol?
 
-Уменьшение нагрузки на сеть , а также безопасность . Чтобы со стороны ,где не должны быть роутеры злоумышленник не смог менять топологию и внедрять свои устройства.
+   Because on the basis of the Router-ID, DR and BDR elections take place, and also gives the System Administrator a simplified understanding of the network. (no need to remember which Loopback is registered there and which networks it knows and is registered on the interfaces)
+
+2. Why is the DR/BDR selection process not considered in this laboratory work?
+
+Because point-to-point connections, LSA type 2 cannot run in such a network, and therefore DR and BDR can be selected.
+
+3. Why is it recommended to configure the OSPF interface as passive?
+
+Reducing network load , as well as security . So that from the side where routers should not be, the attacker could not change the topology and implement his devices.
