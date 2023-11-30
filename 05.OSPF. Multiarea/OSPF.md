@@ -366,3 +366,73 @@ Routing Protocol is "ospf 1"
 !
 </code></pre>
 </details>
+
+** What type of OSPF router does each router belong to?**
+
+- R1: ASBR , ABR, Backbone router
+- R2: ABR, Backbone router
+- R3: Internal router
+
+Let's make sure that the OSPF adjacency relationship is established between the routers.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           0   FULL/  -        00:00:33    192.168.12.2    Serial1/0
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+1.1.1.1           0   FULL/  -        00:00:39    192.168.12.1    Serial1/0
+3.3.3.3           0   FULL/  -        00:00:37    192.168.23.2    Serial1/1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           0   FULL/  -        00:00:39    192.168.23.1    Serial1/1
+</code></pre>
+</details>
+
+The command **show ip ospf interface brief** displays a summary of the cost of the interface routes.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf interface brief
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Se1/0        1     0               192.168.12.1/30    64    P2P   1/1
+Lo2          1     1               192.168.2.1/24     1     LOOP  0/0
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip ospf interface brief
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Se1/0        1     0               192.168.12.2/30    64    P2P   1/1
+Lo6          1     3               192.168.6.1/24     1     LOOP  0/0
+Se1/1        1     3               192.168.23.1/30    64    P2P   1/1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip ospf interface brief
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Lo4          1     3               192.168.4.1/24     1     LOOP  0/0
+Lo5          1     3               192.168.5.1/24     1     LOOP  0/0
+Se1/1        1     3               192.168.23.2/30    64    P2P   1/1
+</code></pre>
+</details>
+### Configure MD5 authentication for all serial interfaces
