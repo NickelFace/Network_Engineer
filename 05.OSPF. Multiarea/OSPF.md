@@ -131,6 +131,7 @@ Banner motd "This is a secure system. Authorized Access Only!"
 do copy run start
 </code></pre>
 </details>
+
 **Check for connectivity at level 3 of the OSI model.**
 
 Run the **show ip interface brief** command to verify that the IP addressing and activity of the interfaces are correct. Make sure that each router can successfully send echo requests to neighboring routers connected via serial interfaces.
@@ -219,6 +220,7 @@ do clear ip ospf process
 [yes]
 </code></pre>
 </details>
+
 **Configure the OSPF protocol on the R2 router.**
 
 <details>
@@ -234,6 +236,7 @@ do clear ip ospf process
 [yes]
 </code></pre>
 </details>
+
 **Configure the OSPF protocol on the R3 router.**
 
 <details>
@@ -367,7 +370,7 @@ Routing Protocol is "ospf 1"
 </code></pre>
 </details>
 
-** What type of OSPF router does each router belong to?**
+**What type of OSPF router does each router belong to?**
 
 - R1: ASBR , ABR, Backbone router
 - R2: ABR, Backbone router
@@ -435,4 +438,5 @@ Lo5          1     3               192.168.5.1/24     1     LOOP  0/0
 Se1/1        1     3               192.168.23.2/30    64    P2P   1/1
 </code></pre>
 </details>
+
 ### Configure MD5 authentication for all serial interfaces
