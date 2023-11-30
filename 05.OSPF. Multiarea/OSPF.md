@@ -2,7 +2,7 @@
 
 ## Topology
 
-![](C:\Users\Maksim\Documents\GitHub\Network_Engineer\05.OSPF. Multiarea\img\OSPFv2.png)
+![](img/OSPFv2.png)
 
 ## The addressing table
 
