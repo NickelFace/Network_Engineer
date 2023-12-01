@@ -253,12 +253,13 @@ do clear ip ospf process
 [yes]
 </code></pre>
 </details>
+
 **Make sure that the OSPF protocol is configured correctly and that the adjacency relationship between the routers is established.**
 
 <details>
 <summary>R1</summary>
 <pre><code>
-R1(config)#do show ip protocols
+R1#show ip protocols
 *** IP Routing is NSF aware ***
 !
 Routing Protocol is "application"
@@ -281,6 +282,7 @@ Routing Protocol is "ospf 1"
   Number of areas in this router is 2. 2 normal 0 stub 0 nssa
   Maximum path: 4
   Routing for Networks:
+    192.168.1.0 0.0.0.255 area 1
     192.168.2.0 0.0.0.255 area 1
     192.168.12.0 0.0.0.3 area 0
   Passive Interface(s):
@@ -288,7 +290,7 @@ Routing Protocol is "ospf 1"
     Loopback2
   Routing Information Sources:
     Gateway         Distance      Last Update
-    2.2.2.2              110      00:00:01
+    2.2.2.2              110      00:02:13
   Distance: (default is 110)
 !
 </code></pre>
@@ -369,6 +371,7 @@ Routing Protocol is "ospf 1"
 !
 </code></pre>
 </details>
+
 **What type of OSPF router does each router belong to?**
 
 - R1: ASBR , ABR, Backbone router
@@ -414,6 +417,7 @@ The command **show ip ospf interface brief** displays a summary of the cost of t
 R1#show ip ospf interface brief
 Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
 Se1/0        1     0               192.168.12.1/30    64    P2P   1/1
+Lo1          1     1               192.168.1.1/24     1     LOOP  0/0
 Lo2          1     1               192.168.2.1/24     1     LOOP  0/0
 </code></pre>
 </details>
@@ -522,13 +526,13 @@ Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
 Gateway of last resort is 0.0.0.0 to network 0.0.0.0
 !
       192.168.4.0/32 is subnetted, 1 subnets
-O IA     192.168.4.1 [110/129] via 192.168.12.2, 00:03:30, Serial1/0
+O IA     192.168.4.1 [110/129] via 192.168.12.2, 00:12:24, Serial1/0
       192.168.5.0/32 is subnetted, 1 subnets
-O IA     192.168.5.1 [110/129] via 192.168.12.2, 00:03:30, Serial1/0
+O IA     192.168.5.1 [110/129] via 192.168.12.2, 00:12:24, Serial1/0
       192.168.6.0/32 is subnetted, 1 subnets
-O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:04:13, Serial1/0
+O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:12:24, Serial1/0
       192.168.23.0/30 is subnetted, 1 subnets
-O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:04:13, Serial1/0
+O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:12:24, Serial1/0
 </code></pre>
 </details>
 <details>
@@ -547,13 +551,15 @@ Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
 !
 Gateway of last resort is 192.168.12.1 to network 0.0.0.0
 !
-O*E2  0.0.0.0/0 [110/1] via 192.168.12.1, 00:04:29, Serial1/0
+O*E2  0.0.0.0/0 [110/1] via 192.168.12.1, 00:13:17, Serial1/0
+      192.168.1.0/32 is subnetted, 1 subnets
+O IA     192.168.1.1 [110/65] via 192.168.12.1, 00:13:17, Serial1/0
       192.168.2.0/32 is subnetted, 1 subnets
-O IA     192.168.2.1 [110/65] via 192.168.12.1, 00:04:29, Serial1/0
+O IA     192.168.2.1 [110/65] via 192.168.12.1, 00:13:17, Serial1/0
       192.168.4.0/32 is subnetted, 1 subnets
-O        192.168.4.1 [110/65] via 192.168.23.2, 00:03:46, Serial1/1
+O        192.168.4.1 [110/65] via 192.168.23.2, 00:13:17, Serial1/1
       192.168.5.0/32 is subnetted, 1 subnets
-O        192.168.5.1 [110/65] via 192.168.23.2, 00:03:46, Serial1/1
+O        192.168.5.1 [110/65] via 192.168.23.2, 00:13:17, Serial1/1
 </code></pre>
 </details>
 <details>
@@ -572,15 +578,447 @@ Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
 !
 Gateway of last resort is 192.168.23.1 to network 0.0.0.0
 !
-O*E2  0.0.0.0/0 [110/1] via 192.168.23.1, 00:03:53, Serial1/1
+O*E2  0.0.0.0/0 [110/1] via 192.168.23.1, 00:14:24, Serial1/1
+      192.168.1.0/32 is subnetted, 1 subnets
+O IA     192.168.1.1 [110/129] via 192.168.23.1, 00:14:34, Serial1/1
       192.168.2.0/32 is subnetted, 1 subnets
-O IA     192.168.2.1 [110/129] via 192.168.23.1, 00:03:53, Serial1/1
+O IA     192.168.2.1 [110/129] via 192.168.23.1, 00:14:34, Serial1/1
       192.168.6.0/32 is subnetted, 1 subnets
-O        192.168.6.1 [110/65] via 192.168.23.1, 00:03:53, Serial1/1
+O        192.168.6.1 [110/65] via 192.168.23.1, 00:14:44, Serial1/1
       192.168.12.0/30 is subnetted, 1 subnets
-O IA     192.168.12.0 [110/128] via 192.168.23.1, 00:03:53, Serial1/1
+O IA     192.168.12.0 [110/128] via 192.168.23.1, 00:14:34, Serial1/1
 </code></pre>
 </details>
+
 All routes marked as (O IA) are inter-regional routes.
 
-### Просмотрите базы данных LSDB на всех маршрутизаторах
+### Browse LSDB databases on all routers
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf database
+!
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+!
+                Router Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1029        0x8000000C 0x003667 2
+2.2.2.2         2.2.2.2         919         0x80000002 0x00E3C0 2
+!
+                Summary Net Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.1.1     1.1.1.1         1030        0x80000001 0x00AE1E
+192.168.2.1     1.1.1.1         1030        0x80000001 0x00A328
+192.168.4.1     2.2.2.2         914         0x80000001 0x00F193
+192.168.5.1     2.2.2.2         914         0x80000001 0x00E69D
+192.168.6.1     2.2.2.2         914         0x80000001 0x00596A
+192.168.23.0    2.2.2.2         914         0x80000001 0x000E69
+!
+                Router Link States (Area 1)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1034        0x80000001 0x009E9F 2
+!
+                Summary Net Link States (Area 1)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.4.1     1.1.1.1         908         0x80000003 0x008EB8
+192.168.5.1     1.1.1.1         908         0x80000003 0x0083C2
+192.168.6.1     1.1.1.1         908         0x80000003 0x00F58F
+192.168.12.0    1.1.1.1         1030        0x80000001 0x00A5E0
+192.168.23.0    1.1.1.1         908         0x80000003 0x00AA8E
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         1030        0x80000009 0x000D99 1
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip ospf database
+!
+            OSPF Router with ID (2.2.2.2) (Process ID 1)
+!
+                Router Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1873        0x8000000C 0x003667 2
+2.2.2.2         2.2.2.2         1761        0x80000002 0x00E3C0 2
+!
+                Summary Net Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.1.1     1.1.1.1         1873        0x80000001 0x00AE1E
+192.168.2.1     1.1.1.1         1873        0x80000001 0x00A328
+192.168.4.1     2.2.2.2         1756        0x80000001 0x00F193
+192.168.5.1     2.2.2.2         1756        0x80000001 0x00E69D
+192.168.6.1     2.2.2.2         1756        0x80000001 0x00596A
+192.168.23.0    2.2.2.2         1756        0x80000001 0x000E69
+!
+                Router Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+2.2.2.2         2.2.2.2         1761        0x80000002 0x007491 3
+3.3.3.3         3.3.3.3         1828        0x8000000C 0x00E593 4
+!
+                Summary Net Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.1.1     2.2.2.2         1756        0x80000001 0x001375
+192.168.2.1     2.2.2.2         1756        0x80000001 0x00087F
+192.168.12.0    2.2.2.2         1756        0x80000001 0x0087FA
+!
+                Summary ASB Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+1.1.1.1         2.2.2.2         1756        0x80000001 0x00935C
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         1873        0x80000009 0x000D99 1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip ospf database
+!
+            OSPF Router with ID (3.3.3.3) (Process ID 1)
+!
+                Router Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+2.2.2.2         2.2.2.2         1878        0x80000002 0x007491 3
+3.3.3.3         3.3.3.3         1943        0x8000000C 0x00E593 4
+!
+                Summary Net Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.1.1     2.2.2.2         1873        0x80000001 0x001375
+192.168.2.1     2.2.2.2         1873        0x80000001 0x00087F
+192.168.12.0    2.2.2.2         1873        0x80000001 0x0087FA
+!
+                Summary ASB Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+1.1.1.1         2.2.2.2         1873        0x80000001 0x00935C
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         1990        0x80000009 0x000D99 1
+</code></pre>
+</details>
+
+### Set up inter-regional summary routes
+
+Let's set up the sum route for networks in area 1 to R1.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+router ospf 1
+area 1 range 192.168.0.0 255.255.252.0
+</code></pre>
+</details>
+
+Let's look at the result on R3
+
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 192.168.23.1 to network 0.0.0.0
+!
+O*E2  0.0.0.0/0 [110/1] via 192.168.23.1, 00:32:23, Serial1/1
+O IA  192.168.0.0/22 [110/129] via 192.168.23.1, 00:00:15, Serial1/1
+      192.168.6.0/32 is subnetted, 1 subnets
+O        192.168.6.1 [110/65] via 192.168.23.1, 00:32:43, Serial1/1
+      192.168.12.0/30 is subnetted, 1 subnets
+O IA     192.168.12.0 [110/128] via 192.168.23.1, 00:32:33, Serial1/1
+</code></pre>
+</details>
+
+Let's set up the sum route for networks in area 3 on R2.
+
+<details>
+<summary>R2</summary>
+<pre><code>
+router ospf 1
+area 3 range 192.168.4.0 255.255.254.0
+</code></pre>
+</details>
+
+And look at the result R1
+
+**before** 
+
+<details>
+<summary>R1</summary>
+<pre><code>
+O     192.168.0.0/22 is a summary, 00:02:25, Null0
+      192.168.4.0/32 is subnetted, 1 subnets
+O IA     192.168.4.1 [110/129] via 192.168.12.2, 00:02:25, Serial1/0
+      192.168.5.0/32 is subnetted, 1 subnets
+O IA     192.168.5.1 [110/129] via 192.168.12.2, 00:02:25, Serial1/0
+      192.168.6.0/32 is subnetted, 1 subnets
+O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:02:25, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:02:25, Serial1/0
+</code></pre>
+</details>
+**after** 
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 0.0.0.0 to network 0.0.0.0
+!
+O     192.168.0.0/22 is a summary, 00:30:49, Null0
+O IA  192.168.4.0/23 [110/129] via 192.168.12.2, 00:00:11, Serial1/0
+      192.168.6.0/32 is subnetted, 1 subnets
+O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:03:18, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:30:49, Serial1/0
+</code></pre>
+</details>
+
+The screenshots above show the use of the command and its results, which affected the routing table. The table has become smaller and more compact.
+
+### Re-display the OSPF routing tables for all routers.
+
+Run the **show ip route ospf** command on each router. Let's write down the results for total and inter-regional routes.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 0.0.0.0 to network 0.0.0.0
+!
+O     192.168.0.0/22 is a summary, 00:30:49, Null0
+O IA  192.168.4.0/23 [110/129] via 192.168.12.2, 00:00:11, Serial1/0
+      192.168.6.0/32 is subnetted, 1 subnets
+O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:03:18, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:30:49, Serial1/0
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 192.168.12.1 to network 0.0.0.0
+!
+O*E2  0.0.0.0/0 [110/1] via 192.168.12.1, 00:13:55, Serial1/0
+O IA  192.168.0.0/22 [110/65] via 192.168.12.1, 00:13:55, Serial1/0
+O     192.168.4.0/23 is a summary, 00:13:55, Null0
+      192.168.4.0/32 is subnetted, 1 subnets
+O        192.168.4.1 [110/65] via 192.168.23.2, 00:13:55, Serial1/1
+      192.168.5.0/32 is subnetted, 1 subnets
+O        192.168.5.1 [110/65] via 192.168.23.2, 00:13:55, Serial1/1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 192.168.23.1 to network 0.0.0.0
+!
+O*E2  0.0.0.0/0 [110/1] via 192.168.23.1, 01:16:51, Serial1/1
+O IA  192.168.0.0/22 [110/129] via 192.168.23.1, 00:44:43, Serial1/1
+      192.168.6.0/32 is subnetted, 1 subnets
+O        192.168.6.1 [110/65] via 192.168.23.1, 01:17:11, Serial1/1
+      192.168.12.0/30 is subnetted, 1 subnets
+O IA     192.168.12.0 [110/128] via 192.168.23.1, 01:17:01, Serial1/1
+</code></pre>
+</details>
+
+### Просмотрите базы данных LSDB на всех маршрутизаторах.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf database
+!
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+!
+                Router Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1431        0x8000000E 0x003269 2
+2.2.2.2         2.2.2.2         1328        0x80000004 0x00DFC2 2
+!
+                Summary Net Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.0.0     1.1.1.1         1431        0x80000002 0x00B21E
+192.168.4.0     2.2.2.2         1609        0x80000001 0x00F690
+192.168.6.1     2.2.2.2         1795        0x80000001 0x00596A
+192.168.23.0    2.2.2.2         1328        0x80000003 0x000A6B
+!
+                Router Link States (Area 1)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1431        0x80000003 0x009AA1 2
+!
+                Summary Net Link States (Area 1)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.4.0     1.1.1.1         1608        0x80000001 0x0097B3
+192.168.6.1     1.1.1.1         1794        0x80000001 0x00F98D
+192.168.12.0    1.1.1.1         1431        0x80000003 0x00A1E2
+192.168.23.0    1.1.1.1         1431        0x80000005 0x00A690
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         1431        0x8000000B 0x00099B 1
+!
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip ospf database
+!
+            OSPF Router with ID (2.2.2.2) (Process ID 1)
+!
+                Router Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+1.1.1.1         1.1.1.1         1311        0x8000000E 0x003269 2
+2.2.2.2         2.2.2.2         1206        0x80000004 0x00DFC2 2
+!
+                Summary Net Link States (Area 0)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.0.0     1.1.1.1         1311        0x80000002 0x00B21E
+192.168.4.0     2.2.2.2         1488        0x80000001 0x00F690
+192.168.6.1     2.2.2.2         1674        0x80000001 0x00596A
+192.168.23.0    2.2.2.2         1206        0x80000003 0x000A6B
+!
+                Router Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+2.2.2.2         2.2.2.2         1206        0x80000004 0x007093 3
+3.3.3.3         3.3.3.3         1313        0x8000000E 0x00E195 4
+!
+                Summary Net Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.0.0     2.2.2.2         1459        0x80000002 0x001775
+192.168.12.0    2.2.2.2         1206        0x80000003 0x0083FC
+!
+                Summary ASB Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+1.1.1.1         2.2.2.2         1206        0x80000003 0x008F5E
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         1311        0x8000000B 0x00099B 1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip ospf database
+!
+            OSPF Router with ID (3.3.3.3) (Process ID 1)
+!
+                Router Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum Link count
+2.2.2.2         2.2.2.2         789         0x80000004 0x007093 3
+3.3.3.3         3.3.3.3         894         0x8000000E 0x00E195 4
+!
+                Summary Net Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+192.168.0.0     2.2.2.2         1042        0x80000002 0x001775
+192.168.12.0    2.2.2.2         789         0x80000003 0x0083FC
+!
+                Summary ASB Link States (Area 3)
+!
+Link ID         ADV Router      Age         Seq#       Checksum
+1.1.1.1         2.2.2.2         789         0x80000003 0x008F5E
+!
+                Type-5 AS External Link States
+!
+Link ID         ADV Router      Age         Seq#       Checksum Tag
+0.0.0.0         1.1.1.1         894         0x8000000B 0x00099B 1
+</code></pre>
+</details>
+What type of LSA packet is transmitted to the backbone by the ABR router when interconnection of inter-regional routes is enabled?
+
+Summary Net Link States , i.e. LSA of 3 types
+
+### Check for an end-to-end connection.
+
+I checked the availability of each network . As in the beginning, each network can be accessed from each router. 
+
+Questions to repeat
+
+What are the three advantages of OSPF in network design for multiple areas?
+
+- **Reduction of overhead costs for updating channel states.**
+- **Smaller routing tables**.
+- **Reducing the frequency of calculations of the shortest path**.

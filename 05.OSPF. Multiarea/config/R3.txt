@@ -1,15 +1,21 @@
 enable
 configure terminal
 hostname R3
-interface serial 1/1
-ip address 192.168.23.2 255.255.255.252
-no shutdown
+interface Serial1/1
+ no shutdown
+ ip address 192.168.23.2 255.255.255.252
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 Cisco123
+ serial restart-delay 0
+!
 exit
-interface loopback 4
-ip address 192.168.4.1 255.255.255.0
-exit
-interface loopback 5
-ip address 192.168.5.1 255.255.255.0
+interface Loopback4
+ no shutdown
+ ip address 192.168.4.1 255.255.255.0
+!
+interface Loopback5
+ no shutdown
+ ip address 192.168.5.1 255.255.255.0
 exit
 no ip domain-lookup
 enable secret class
@@ -27,15 +33,15 @@ Banner motd "This is a secure system. Authorized Access Only!"
 do copy run start
 
 router ospf 1
-router-id 3.3.3.3
-network 192.168.23.0 0.0.0.3 area 3
-passive-interface Loopback4
-passive-interface Loopback5
-network 192.168.4.0 0.0.0.255 area 3
-network 192.168.5.0 0.0.0.255 area 3
+ router-id 3.3.3.3
+ passive-interface Loopback4
+ passive-interface Loopback5
+ network 192.168.4.0 0.0.0.255 area 3
+ network 192.168.5.0 0.0.0.255 area 3
+ network 192.168.23.0 0.0.0.3 area 3
 do clear ip ospf process
 
 
-interface Serial 1/1
-ip ospf authentication message-digest
-ip ospf message-digest-key 1 md5 Cisco123
+end
+clear ip ospf process
+wr
