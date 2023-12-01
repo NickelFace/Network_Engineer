@@ -369,7 +369,6 @@ Routing Protocol is "ospf 1"
 !
 </code></pre>
 </details>
-
 **What type of OSPF router does each router belong to?**
 
 - R1: ASBR , ABR, Backbone router
@@ -440,3 +439,148 @@ Se1/1        1     3               192.168.23.2/30    64    P2P   1/1
 </details>
 
 ### Configure MD5 authentication for all serial interfaces
+
+<details>
+<summary>R1</summary>
+<pre><code>
+interface Serial 1/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 Cisco123
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+interface Serial 0/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 Cisco123
+interface Serial 1/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 Cisco123
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+interface Serial 1/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 Cisco123
+</code></pre>
+</details>
+
+Why is it useful to check if OSPF is working correctly before setting up OSPF authentication?
+
+Obviously, in order not to add problems to ourselves, after we write the OSPF process on each router.
+
+### Check the restoration of the OSPF adjacency relationship.
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           0   FULL/  -        00:00:33    192.168.12.2    Serial1/0
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+1.1.1.1           0   FULL/  -        00:00:39    192.168.12.1    Serial1/0
+3.3.3.3           0   FULL/  -        00:00:37    192.168.23.2    Serial1/1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3#show ip ospf neighbor
+!
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           0   FULL/  -        00:00:39    192.168.23.1    Serial1/1
+</code></pre>
+</details>
+
+## Setting up inter-regional summary routes
+
+<details>
+<summary>R1</summary>
+<pre><code>
+R1(config-if)#do show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 0.0.0.0 to network 0.0.0.0
+!
+      192.168.4.0/32 is subnetted, 1 subnets
+O IA     192.168.4.1 [110/129] via 192.168.12.2, 00:03:30, Serial1/0
+      192.168.5.0/32 is subnetted, 1 subnets
+O IA     192.168.5.1 [110/129] via 192.168.12.2, 00:03:30, Serial1/0
+      192.168.6.0/32 is subnetted, 1 subnets
+O IA     192.168.6.1 [110/65] via 192.168.12.2, 00:04:13, Serial1/0
+      192.168.23.0/30 is subnetted, 1 subnets
+O IA     192.168.23.0 [110/128] via 192.168.12.2, 00:04:13, Serial1/0
+</code></pre>
+</details>
+<details>
+<summary>R2</summary>
+<pre><code>
+R2(config-if)#do show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 192.168.12.1 to network 0.0.0.0
+!
+O*E2  0.0.0.0/0 [110/1] via 192.168.12.1, 00:04:29, Serial1/0
+      192.168.2.0/32 is subnetted, 1 subnets
+O IA     192.168.2.1 [110/65] via 192.168.12.1, 00:04:29, Serial1/0
+      192.168.4.0/32 is subnetted, 1 subnets
+O        192.168.4.1 [110/65] via 192.168.23.2, 00:03:46, Serial1/1
+      192.168.5.0/32 is subnetted, 1 subnets
+O        192.168.5.1 [110/65] via 192.168.23.2, 00:03:46, Serial1/1
+</code></pre>
+</details>
+<details>
+<summary>R3</summary>
+<pre><code>
+R3(config-if)#do show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+!
+Gateway of last resort is 192.168.23.1 to network 0.0.0.0
+!
+O*E2  0.0.0.0/0 [110/1] via 192.168.23.1, 00:03:53, Serial1/1
+      192.168.2.0/32 is subnetted, 1 subnets
+O IA     192.168.2.1 [110/129] via 192.168.23.1, 00:03:53, Serial1/1
+      192.168.6.0/32 is subnetted, 1 subnets
+O        192.168.6.1 [110/65] via 192.168.23.1, 00:03:53, Serial1/1
+      192.168.12.0/30 is subnetted, 1 subnets
+O IA     192.168.12.0 [110/128] via 192.168.23.1, 00:03:53, Serial1/1
+</code></pre>
+</details>
+All routes marked as (O IA) are inter-regional routes.
+
+### Просмотрите базы данных LSDB на всех маршрутизаторах
